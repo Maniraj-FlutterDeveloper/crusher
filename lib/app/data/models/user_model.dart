@@ -3,12 +3,12 @@ import 'package:equatable/equatable.dart';
 class UserModel extends Equatable {
   final int? id;
   final String username;
-  final String password;
+  final String? password;
   final String? name;
   final String? email;
   final String? mobile;
-  final DateTime? lastLogin;
   final bool isActive;
+  final DateTime? lastLogin;
   final DateTime createdAt;
   final DateTime updatedAt;
   
@@ -18,12 +18,12 @@ class UserModel extends Equatable {
   const UserModel({
     this.id,
     required this.username,
-    required this.password,
+    this.password,
     this.name,
     this.email,
     this.mobile,
+    required this.isActive,
     this.lastLogin,
-    this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
     this.roles,
@@ -37,8 +37,8 @@ class UserModel extends Equatable {
     String? name,
     String? email,
     String? mobile,
-    DateTime? lastLogin,
     bool? isActive,
+    DateTime? lastLogin,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<RoleModel>? roles,
@@ -50,8 +50,8 @@ class UserModel extends Equatable {
       name: name ?? this.name,
       email: email ?? this.email,
       mobile: mobile ?? this.mobile,
-      lastLogin: lastLogin ?? this.lastLogin,
       isActive: isActive ?? this.isActive,
+      lastLogin: lastLogin ?? this.lastLogin,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       roles: roles ?? this.roles,
@@ -63,12 +63,11 @@ class UserModel extends Equatable {
     return {
       'id': id,
       'username': username,
-      'password': password,
       'name': name,
       'email': email,
       'mobile': mobile,
-      'last_login': lastLogin?.toIso8601String(),
       'is_active': isActive,
+      'last_login': lastLogin?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'roles': roles?.map((role) => role.toJson()).toList(),
@@ -80,12 +79,11 @@ class UserModel extends Equatable {
     return UserModel(
       id: json['id'] as int?,
       username: json['username'] as String,
-      password: json['password'] as String,
       name: json['name'] as String?,
       email: json['email'] as String?,
       mobile: json['mobile'] as String?,
-      lastLogin: json['last_login'] != null ? DateTime.parse(json['last_login'] as String) : null,
       isActive: json['is_active'] as bool,
+      lastLogin: json['last_login'] != null ? DateTime.parse(json['last_login'] as String) : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       roles: json['roles'] != null
@@ -103,8 +101,8 @@ class UserModel extends Equatable {
       'name': name,
       'email': email,
       'mobile': mobile,
-      'last_login': lastLogin?.toIso8601String(),
       'is_active': isActive ? 1 : 0,
+      'last_login': lastLogin?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -115,12 +113,12 @@ class UserModel extends Equatable {
     return UserModel(
       id: map['id'] as int?,
       username: map['username'] as String,
-      password: map['password'] as String,
+      password: map['password'] as String?,
       name: map['name'] as String?,
       email: map['email'] as String?,
       mobile: map['mobile'] as String?,
-      lastLogin: map['last_login'] != null ? DateTime.parse(map['last_login'] as String) : null,
       isActive: map['is_active'] == 1,
+      lastLogin: map['last_login'] != null ? DateTime.parse(map['last_login'] as String) : null,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -130,12 +128,11 @@ class UserModel extends Equatable {
   List<Object?> get props => [
     id,
     username,
-    password,
     name,
     email,
     mobile,
-    lastLogin,
     isActive,
+    lastLogin,
     createdAt,
     updatedAt,
     roles,
@@ -143,7 +140,7 @@ class UserModel extends Equatable {
   
   @override
   String toString() {
-    return 'UserModel(id: $id, username: $username, name: $name)';
+    return 'UserModel(id: $id, username: $username, isActive: $isActive)';
   }
 }
 
@@ -162,7 +159,7 @@ class RoleModel extends Equatable {
     this.id,
     required this.name,
     this.description,
-    this.isActive = true,
+    required this.isActive,
     required this.createdAt,
     required this.updatedAt,
     this.permissions,
@@ -254,7 +251,7 @@ class RoleModel extends Equatable {
   
   @override
   String toString() {
-    return 'RoleModel(id: $id, name: $name)';
+    return 'RoleModel(id: $id, name: $name, isActive: $isActive)';
   }
 }
 
@@ -263,7 +260,6 @@ class PermissionModel extends Equatable {
   final String name;
   final String? description;
   final String module;
-  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
   
@@ -272,7 +268,6 @@ class PermissionModel extends Equatable {
     required this.name,
     this.description,
     required this.module,
-    this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -283,7 +278,6 @@ class PermissionModel extends Equatable {
     String? name,
     String? description,
     String? module,
-    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -292,7 +286,6 @@ class PermissionModel extends Equatable {
       name: name ?? this.name,
       description: description ?? this.description,
       module: module ?? this.module,
-      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -305,7 +298,6 @@ class PermissionModel extends Equatable {
       'name': name,
       'description': description,
       'module': module,
-      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -318,7 +310,6 @@ class PermissionModel extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String?,
       module: json['module'] as String,
-      isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -331,7 +322,6 @@ class PermissionModel extends Equatable {
       'name': name,
       'description': description,
       'module': module,
-      'is_active': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -344,7 +334,6 @@ class PermissionModel extends Equatable {
       name: map['name'] as String,
       description: map['description'] as String?,
       module: map['module'] as String,
-      isActive: map['is_active'] == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -356,7 +345,6 @@ class PermissionModel extends Equatable {
     name,
     description,
     module,
-    isActive,
     createdAt,
     updatedAt,
   ];

@@ -1,116 +1,96 @@
 import 'dart:convert';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_storage/get_storage.dart';
 
 class StorageService extends GetxService {
   static StorageService get to => Get.find<StorageService>();
   
-  late SharedPreferences _prefs;
+  final GetStorage _box = GetStorage();
   
   // Initialize storage service
   Future<StorageService> init() async {
-    _prefs = await SharedPreferences.getInstance();
+    await GetStorage.init();
     print('Storage service initialized');
     return this;
   }
   
   // Get string value
   String? getString(String key) {
-    return _prefs.getString(key);
+    return _box.read<String>(key);
   }
   
   // Set string value
-  Future<bool> setString(String key, String value) async {
-    return await _prefs.setString(key, value);
+  Future<void> setString(String key, String value) async {
+    await _box.write(key, value);
   }
   
   // Get int value
   int? getInt(String key) {
-    return _prefs.getInt(key);
+    return _box.read<int>(key);
   }
   
   // Set int value
-  Future<bool> setInt(String key, int value) async {
-    return await _prefs.setInt(key, value);
+  Future<void> setInt(String key, int value) async {
+    await _box.write(key, value);
   }
   
   // Get double value
   double? getDouble(String key) {
-    return _prefs.getDouble(key);
+    return _box.read<double>(key);
   }
   
   // Set double value
-  Future<bool> setDouble(String key, double value) async {
-    return await _prefs.setDouble(key, value);
+  Future<void> setDouble(String key, double value) async {
+    await _box.write(key, value);
   }
   
   // Get bool value
   bool? getBool(String key) {
-    return _prefs.getBool(key);
+    return _box.read<bool>(key);
   }
   
   // Set bool value
-  Future<bool> setBool(String key, bool value) async {
-    return await _prefs.setBool(key, value);
-  }
-  
-  // Get string list value
-  List<String>? getStringList(String key) {
-    return _prefs.getStringList(key);
-  }
-  
-  // Set string list value
-  Future<bool> setStringList(String key, List<String> value) async {
-    return await _prefs.setStringList(key, value);
+  Future<void> setBool(String key, bool value) async {
+    await _box.write(key, value);
   }
   
   // Get object value
   Map<String, dynamic>? getObject(String key) {
-    final String? jsonString = _prefs.getString(key);
-    if (jsonString == null) {
-      return null;
-    }
+    final String? jsonString = _box.read<String>(key);
+    if (jsonString == null) return null;
     return json.decode(jsonString) as Map<String, dynamic>;
   }
   
   // Set object value
-  Future<bool> setObject(String key, Map<String, dynamic> value) async {
-    return await _prefs.setString(key, json.encode(value));
+  Future<void> setObject(String key, Map<String, dynamic> value) async {
+    await _box.write(key, json.encode(value));
   }
   
-  // Get object list value
-  List<Map<String, dynamic>>? getObjectList(String key) {
-    final String? jsonString = _prefs.getString(key);
-    if (jsonString == null) {
-      return null;
-    }
-    final List<dynamic> jsonList = json.decode(jsonString) as List<dynamic>;
-    return jsonList.cast<Map<String, dynamic>>();
+  // Get list value
+  List<dynamic>? getList(String key) {
+    final String? jsonString = _box.read<String>(key);
+    if (jsonString == null) return null;
+    return json.decode(jsonString) as List<dynamic>;
   }
   
-  // Set object list value
-  Future<bool> setObjectList(String key, List<Map<String, dynamic>> value) async {
-    return await _prefs.setString(key, json.encode(value));
+  // Set list value
+  Future<void> setList(String key, List<dynamic> value) async {
+    await _box.write(key, json.encode(value));
   }
   
   // Check if key exists
   bool hasKey(String key) {
-    return _prefs.containsKey(key);
+    return _box.hasData(key);
   }
   
-  // Remove value
-  Future<bool> remove(String key) async {
-    return await _prefs.remove(key);
+  // Remove key
+  Future<void> remove(String key) async {
+    await _box.remove(key);
   }
   
-  // Clear all values
-  Future<bool> clear() async {
-    return await _prefs.clear();
-  }
-  
-  // Get all keys
-  Set<String> getKeys() {
-    return _prefs.getKeys();
+  // Clear all keys
+  Future<void> clear() async {
+    await _box.erase();
   }
 }
 

@@ -5,6 +5,10 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
+import '../modules/vehicle_master/bindings/vehicle_master_binding.dart';
+import '../modules/vehicle_master/views/vehicle_master_view.dart';
+import '../modules/gate_entry/bindings/gate_entry_binding.dart';
+import '../modules/gate_entry/views/gate_entry_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -29,7 +33,16 @@ class AppPages {
       page: () => const DashboardView(),
       binding: DashboardBinding(),
     ),
+    GetPage(
+      name: Routes.VEHICLE_MASTER,
+      page: () => const VehicleMasterView(),
+      binding: VehicleMasterBinding(),
+    ),
+    GetPage(
+      name: Routes.GATE_ENTRY,
+      page: () => const GateEntryView(),
+      binding: GateEntryBinding(),
+    ),
     // Add more routes here as they are implemented
   ];
 }
-

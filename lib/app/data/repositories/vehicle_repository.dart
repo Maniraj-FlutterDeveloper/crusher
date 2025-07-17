@@ -8,17 +8,13 @@ class VehicleRepository {
   // Get all vehicles
   Future<List<VehicleModel>> getAllVehicles() async {
     final List<Map<String, dynamic>> maps = await _dbProvider.getAll('vehicle_master');
-    return List.generate(maps.length, (i) {
-      return VehicleModel.fromMap(maps[i]);
-    });
+    return maps.map((map) => VehicleModel.fromMap(map)).toList();
   }
   
   // Get active vehicles
   Future<List<VehicleModel>> getActiveVehicles() async {
     final List<Map<String, dynamic>> maps = await _dbProvider.getActiveVehicles();
-    return List.generate(maps.length, (i) {
-      return VehicleModel.fromMap(maps[i]);
-    });
+    return maps.map((map) => VehicleModel.fromMap(map)).toList();
   }
   
   // Get vehicle by id
@@ -26,20 +22,6 @@ class VehicleRepository {
     final Map<String, dynamic>? map = await _dbProvider.getById('vehicle_master', id);
     if (map != null) {
       return VehicleModel.fromMap(map);
-    }
-    return null;
-  }
-  
-  // Get vehicle by number
-  Future<VehicleModel?> getVehicleByNumber(String vehicleNumber) async {
-    final List<Map<String, dynamic>> maps = await _dbProvider.getAll(
-      'vehicle_master',
-      where: 'vehicle_number = ?',
-      whereArgs: [vehicleNumber],
-      limit: 1,
-    );
-    if (maps.isNotEmpty) {
-      return VehicleModel.fromMap(maps.first);
     }
     return null;
   }
@@ -71,30 +53,34 @@ class VehicleRepository {
     );
   }
   
-  // Search vehicles by number
+  // Search vehicles by vehicle number
   Future<List<VehicleModel>> searchVehiclesByNumber(String query) async {
-    final List<Map<String, dynamic>> maps = await _dbProvider.getAll(
+    final List<Map<String, dynamic>> maps = await _dbProvider.query(
       'vehicle_master',
       where: 'vehicle_number LIKE ?',
       whereArgs: ['%$query%'],
       orderBy: 'vehicle_number ASC',
     );
-    return List.generate(maps.length, (i) {
-      return VehicleModel.fromMap(maps[i]);
-    });
+    return maps.map((map) => VehicleModel.fromMap(map)).toList();
   }
   
-  // Search vehicles by owner
-  Future<List<VehicleModel>> searchVehiclesByOwner(String query) async {
-    final List<Map<String, dynamic>> maps = await _dbProvider.getAll(
+  // Check if vehicle number exists
+  Future<bool> vehicleNumberExists(String vehicleNumber, {int? excludeId}) async {
+    String where = 'vehicle_number = ?';
+    List<dynamic> whereArgs = [vehicleNumber];
+    
+    if (excludeId != null) {
+      where += ' AND id != ?';
+      whereArgs.add(excludeId);
+    }
+    
+    final List<Map<String, dynamic>> maps = await _dbProvider.query(
       'vehicle_master',
-      where: 'owner_name LIKE ?',
-      whereArgs: ['%$query%'],
-      orderBy: 'owner_name ASC',
+      where: where,
+      whereArgs: whereArgs,
     );
-    return List.generate(maps.length, (i) {
-      return VehicleModel.fromMap(maps[i]);
-    });
+    
+    return maps.isNotEmpty;
   }
 }
 

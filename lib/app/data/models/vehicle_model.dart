@@ -20,7 +20,7 @@ class VehicleModel extends Equatable {
     this.ownerName,
     this.ownerMobile,
     this.ownerAddress,
-    this.isActive = true,
+    required this.isActive,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -132,7 +132,7 @@ class VehicleModel extends Equatable {
   
   @override
   String toString() {
-    return 'VehicleModel(id: $id, vehicleNumber: $vehicleNumber, vehicleType: $vehicleType, capacity: $capacity)';
+    return 'VehicleModel(id: $id, vehicleNumber: $vehicleNumber, isActive: $isActive)';
   }
 }
 

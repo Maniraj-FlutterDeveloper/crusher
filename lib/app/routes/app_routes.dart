@@ -1,8 +1,10 @@
 abstract class Routes {
   static const INITIAL = '/';
-  static const LOGIN = '/login';
   static const HOME = '/home';
+  static const LOGIN = '/login';
   static const DASHBOARD = '/dashboard';
+  static const VEHICLE_MASTER = '/vehicle-master';
+  static const GATE_ENTRY = '/gate-entry';
   
   // Master configuration routes
   static const MATERIAL_MASTER = '/material-master';
@@ -53,4 +55,3 @@ abstract class Routes {
   static const SECURITY_SETTINGS = '/security-settings';
   static const AUDIT_LOGS = '/audit-logs';
 }
-

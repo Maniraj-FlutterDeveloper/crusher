@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../core/utils/responsive_builder.dart';
 
 class ResponsiveLayout extends StatelessWidget {
   final Widget mobile;
@@ -13,220 +12,66 @@ class ResponsiveLayout extends StatelessWidget {
     required this.desktop,
   }) : super(key: key);
   
-  @override
-  Widget build(BuildContext context) {
-    return ResponsiveBuilder(
-      builder: (context, deviceType, size) {
-        switch (deviceType) {
-          case DeviceScreenType.desktop:
-            return desktop;
-          case DeviceScreenType.tablet:
-            return tablet ?? mobile;
-          case DeviceScreenType.mobile:
-            return mobile;
-          default:
-            return mobile;
-        }
-      },
-    );
-  }
-}
-
-class ResponsiveGridView extends StatelessWidget {
-  final List<Widget> children;
-  final int mobileColumns;
-  final int tabletColumns;
-  final int desktopColumns;
-  final double spacing;
-  final double runSpacing;
-  final EdgeInsetsGeometry? padding;
+  static bool isMobile(BuildContext context) =>
+      MediaQuery.of(context).size.width < 650;
   
-  const ResponsiveGridView({
-    Key? key,
-    required this.children,
-    this.mobileColumns = 1,
-    this.tabletColumns = 2,
-    this.desktopColumns = 4,
-    this.spacing = 16,
-    this.runSpacing = 16,
-    this.padding,
-  }) : super(key: key);
+  static bool isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= 650 &&
+      MediaQuery.of(context).size.width < 1100;
+  
+  static bool isDesktop(BuildContext context) =>
+      MediaQuery.of(context).size.width >= 1100;
   
   @override
   Widget build(BuildContext context) {
-    return ResponsiveBuilder(
-      builder: (context, deviceType, size) {
-        int crossAxisCount;
-        
-        switch (deviceType) {
-          case DeviceScreenType.desktop:
-            crossAxisCount = desktopColumns;
-            break;
-          case DeviceScreenType.tablet:
-            crossAxisCount = tabletColumns;
-            break;
-          case DeviceScreenType.mobile:
-            crossAxisCount = mobileColumns;
-            break;
-          default:
-            crossAxisCount = mobileColumns;
-        }
-        
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          padding: padding,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: spacing,
-            mainAxisSpacing: runSpacing,
-            childAspectRatio: 1,
-          ),
-          itemCount: children.length,
-          itemBuilder: (context, index) => children[index],
-        );
-      },
-    );
-  }
-}
-
-class ResponsiveRow extends StatelessWidget {
-  final List<Widget> children;
-  final MainAxisAlignment mainAxisAlignment;
-  final CrossAxisAlignment crossAxisAlignment;
-  final MainAxisSize mainAxisSize;
-  final TextDirection? textDirection;
-  final VerticalDirection verticalDirection;
-  final TextBaseline? textBaseline;
-  final double spacing;
-  
-  const ResponsiveRow({
-    Key? key,
-    required this.children,
-    this.mainAxisAlignment = MainAxisAlignment.start,
-    this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.mainAxisSize = MainAxisSize.max,
-    this.textDirection,
-    this.verticalDirection = VerticalDirection.down,
-    this.textBaseline,
-    this.spacing = 16,
-  }) : super(key: key);
-  
-  @override
-  Widget build(BuildContext context) {
-    return ResponsiveBuilder(
-      builder: (context, deviceType, size) {
-        if (deviceType == DeviceScreenType.mobile) {
-          return Column(
-            mainAxisAlignment: mainAxisAlignment,
-            crossAxisAlignment: crossAxisAlignment,
-            mainAxisSize: mainAxisSize,
-            textDirection: textDirection,
-            verticalDirection: verticalDirection,
-            textBaseline: textBaseline,
-            children: _addSpacing(children, spacing, isVertical: true),
-          );
-        } else {
-          return Row(
-            mainAxisAlignment: mainAxisAlignment,
-            crossAxisAlignment: crossAxisAlignment,
-            mainAxisSize: mainAxisSize,
-            textDirection: textDirection,
-            verticalDirection: verticalDirection,
-            textBaseline: textBaseline,
-            children: _addSpacing(children, spacing, isVertical: false),
-          );
-        }
-      },
-    );
-  }
-  
-  List<Widget> _addSpacing(List<Widget> widgets, double spacing, {required bool isVertical}) {
-    if (widgets.isEmpty) return [];
-    if (widgets.length == 1) return widgets;
+    final Size size = MediaQuery.of(context).size;
     
-    final List<Widget> result = [];
-    
-    for (int i = 0; i < widgets.length; i++) {
-      result.add(widgets[i]);
-      
-      if (i < widgets.length - 1) {
-        if (isVertical) {
-          result.add(SizedBox(height: spacing));
-        } else {
-          result.add(SizedBox(width: spacing));
-        }
-      }
+    if (size.width >= 1100) {
+      return desktop;
+    } else if (size.width >= 650 && tablet != null) {
+      return tablet!;
+    } else {
+      return mobile;
     }
-    
-    return result;
   }
 }
 
-class ResponsiveContainer extends StatelessWidget {
-  final Widget child;
-  final double mobileWidth;
-  final double tabletWidth;
-  final double desktopWidth;
-  final double? mobileHeight;
-  final double? tabletHeight;
-  final double? desktopHeight;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-  final Decoration? decoration;
-  final Alignment? alignment;
+class ResponsiveBuilder extends StatelessWidget {
+  final Widget Function(BuildContext context, BoxConstraints constraints, ScreenSize screenSize) builder;
   
-  const ResponsiveContainer({
+  const ResponsiveBuilder({
     Key? key,
-    required this.child,
-    this.mobileWidth = double.infinity,
-    this.tabletWidth = double.infinity,
-    this.desktopWidth = double.infinity,
-    this.mobileHeight,
-    this.tabletHeight,
-    this.desktopHeight,
-    this.padding,
-    this.margin,
-    this.decoration,
-    this.alignment,
+    required this.builder,
   }) : super(key: key);
   
   @override
   Widget build(BuildContext context) {
-    return ResponsiveBuilder(
-      builder: (context, deviceType, size) {
-        double width;
-        double? height;
-        
-        switch (deviceType) {
-          case DeviceScreenType.desktop:
-            width = desktopWidth;
-            height = desktopHeight;
-            break;
-          case DeviceScreenType.tablet:
-            width = tabletWidth;
-            height = tabletHeight;
-            break;
-          case DeviceScreenType.mobile:
-            width = mobileWidth;
-            height = mobileHeight;
-            break;
-          default:
-            width = mobileWidth;
-            height = mobileHeight;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        ScreenSize screenSize;
+        if (constraints.maxWidth >= 1100) {
+          screenSize = ScreenSize.desktop;
+        } else if (constraints.maxWidth >= 650) {
+          screenSize = ScreenSize.tablet;
+        } else {
+          screenSize = ScreenSize.mobile;
         }
         
-        return Container(
-          width: width,
-          height: height,
-          padding: padding,
-          margin: margin,
-          decoration: decoration,
-          alignment: alignment,
-          child: child,
-        );
+        return builder(context, constraints, screenSize);
       },
     );
   }
+}
+
+enum ScreenSize {
+  mobile,
+  tablet,
+  desktop,
+}
+
+extension ScreenSizeExtension on ScreenSize {
+  bool get isMobile => this == ScreenSize.mobile;
+  bool get isTablet => this == ScreenSize.tablet;
+  bool get isDesktop => this == ScreenSize.desktop;
 }
 

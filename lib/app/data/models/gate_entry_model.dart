@@ -12,11 +12,9 @@ class GateEntryModel extends Equatable {
   final double? tareWeight;
   final double? grossWeight;
   final double? netWeight;
-  final int? supplierId;
-  final int? buyerId;
-  final String? remarks;
   final String status;
-  final String? gatePassNumber;
+  final String gatePassNumber;
+  final String? remarks;
   final int operatorId;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -35,11 +33,9 @@ class GateEntryModel extends Equatable {
     this.tareWeight,
     this.grossWeight,
     this.netWeight,
-    this.supplierId,
-    this.buyerId,
-    this.remarks,
     required this.status,
-    this.gatePassNumber,
+    required this.gatePassNumber,
+    this.remarks,
     required this.operatorId,
     required this.createdAt,
     required this.updatedAt,
@@ -58,11 +54,9 @@ class GateEntryModel extends Equatable {
     double? tareWeight,
     double? grossWeight,
     double? netWeight,
-    int? supplierId,
-    int? buyerId,
-    String? remarks,
     String? status,
     String? gatePassNumber,
+    String? remarks,
     int? operatorId,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -79,11 +73,9 @@ class GateEntryModel extends Equatable {
       tareWeight: tareWeight ?? this.tareWeight,
       grossWeight: grossWeight ?? this.grossWeight,
       netWeight: netWeight ?? this.netWeight,
-      supplierId: supplierId ?? this.supplierId,
-      buyerId: buyerId ?? this.buyerId,
-      remarks: remarks ?? this.remarks,
       status: status ?? this.status,
       gatePassNumber: gatePassNumber ?? this.gatePassNumber,
+      remarks: remarks ?? this.remarks,
       operatorId: operatorId ?? this.operatorId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -104,11 +96,9 @@ class GateEntryModel extends Equatable {
       'tare_weight': tareWeight,
       'gross_weight': grossWeight,
       'net_weight': netWeight,
-      'supplier_id': supplierId,
-      'buyer_id': buyerId,
-      'remarks': remarks,
       'status': status,
       'gate_pass_number': gatePassNumber,
+      'remarks': remarks,
       'operator_id': operatorId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -129,15 +119,13 @@ class GateEntryModel extends Equatable {
       tareWeight: json['tare_weight'] != null ? json['tare_weight'] as double : null,
       grossWeight: json['gross_weight'] != null ? json['gross_weight'] as double : null,
       netWeight: json['net_weight'] != null ? json['net_weight'] as double : null,
-      supplierId: json['supplier_id'] as int?,
-      buyerId: json['buyer_id'] as int?,
-      remarks: json['remarks'] as String?,
       status: json['status'] as String,
-      gatePassNumber: json['gate_pass_number'] as String?,
+      gatePassNumber: json['gate_pass_number'] as String,
+      remarks: json['remarks'] as String?,
       operatorId: json['operator_id'] as int,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      vehicle: json['vehicle'] != null ? VehicleModel.fromJson(json['vehicle']) : null,
+      vehicle: json['vehicle'] != null ? VehicleModel.fromJson(json['vehicle'] as Map<String, dynamic>) : null,
     );
   }
   
@@ -154,11 +142,9 @@ class GateEntryModel extends Equatable {
       'tare_weight': tareWeight,
       'gross_weight': grossWeight,
       'net_weight': netWeight,
-      'supplier_id': supplierId,
-      'buyer_id': buyerId,
-      'remarks': remarks,
       'status': status,
       'gate_pass_number': gatePassNumber,
+      'remarks': remarks,
       'operator_id': operatorId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -178,11 +164,9 @@ class GateEntryModel extends Equatable {
       tareWeight: map['tare_weight'] != null ? map['tare_weight'] as double : null,
       grossWeight: map['gross_weight'] != null ? map['gross_weight'] as double : null,
       netWeight: map['net_weight'] != null ? map['net_weight'] as double : null,
-      supplierId: map['supplier_id'] as int?,
-      buyerId: map['buyer_id'] as int?,
-      remarks: map['remarks'] as String?,
       status: map['status'] as String,
-      gatePassNumber: map['gate_pass_number'] as String?,
+      gatePassNumber: map['gate_pass_number'] as String,
+      remarks: map['remarks'] as String?,
       operatorId: map['operator_id'] as int,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
@@ -201,11 +185,9 @@ class GateEntryModel extends Equatable {
     tareWeight,
     grossWeight,
     netWeight,
-    supplierId,
-    buyerId,
-    remarks,
     status,
     gatePassNumber,
+    remarks,
     operatorId,
     createdAt,
     updatedAt,
@@ -214,7 +196,7 @@ class GateEntryModel extends Equatable {
   
   @override
   String toString() {
-    return 'GateEntryModel(id: $id, sessionId: $sessionId, vehicleId: $vehicleId, status: $status)';
+    return 'GateEntryModel(id: $id, sessionId: $sessionId, status: $status)';
   }
 }
 
