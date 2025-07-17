@@ -42,7 +42,7 @@ class StoneSizeModel extends Equatable {
       'id': id,
       'size': size,
       'description': description,
-      'is_active': isActive ? 1 : 0,
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -54,7 +54,7 @@ class StoneSizeModel extends Equatable {
       id: json['id'] as int?,
       size: json['size'] as String,
       description: json['description'] as String?,
-      isActive: (json['is_active'] as int) == 1,
+      isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -78,7 +78,7 @@ class StoneSizeModel extends Equatable {
       id: map['id'] as int?,
       size: map['size'] as String,
       description: map['description'] as String?,
-      isActive: (map['is_active'] as int) == 1,
+      isActive: map['is_active'] == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );

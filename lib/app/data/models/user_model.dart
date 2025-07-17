@@ -4,24 +4,26 @@ class UserModel extends Equatable {
   final int? id;
   final String username;
   final String password;
-  final String name;
+  final String? name;
   final String? email;
   final String? mobile;
-  final bool isActive;
   final DateTime? lastLogin;
+  final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // Related models
   final List<RoleModel>? roles;
   
   const UserModel({
     this.id,
     required this.username,
     required this.password,
-    required this.name,
+    this.name,
     this.email,
     this.mobile,
-    this.isActive = true,
     this.lastLogin,
+    this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
     this.roles,
@@ -35,8 +37,8 @@ class UserModel extends Equatable {
     String? name,
     String? email,
     String? mobile,
-    bool? isActive,
     DateTime? lastLogin,
+    bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
     List<RoleModel>? roles,
@@ -48,8 +50,8 @@ class UserModel extends Equatable {
       name: name ?? this.name,
       email: email ?? this.email,
       mobile: mobile ?? this.mobile,
-      isActive: isActive ?? this.isActive,
       lastLogin: lastLogin ?? this.lastLogin,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       roles: roles ?? this.roles,
@@ -61,11 +63,12 @@ class UserModel extends Equatable {
     return {
       'id': id,
       'username': username,
+      'password': password,
       'name': name,
       'email': email,
       'mobile': mobile,
-      'is_active': isActive ? 1 : 0,
       'last_login': lastLogin?.toIso8601String(),
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'roles': roles?.map((role) => role.toJson()).toList(),
@@ -77,12 +80,12 @@ class UserModel extends Equatable {
     return UserModel(
       id: json['id'] as int?,
       username: json['username'] as String,
-      password: '', // Password is not included in JSON for security
-      name: json['name'] as String,
+      password: json['password'] as String,
+      name: json['name'] as String?,
       email: json['email'] as String?,
       mobile: json['mobile'] as String?,
-      isActive: (json['is_active'] as int) == 1,
       lastLogin: json['last_login'] != null ? DateTime.parse(json['last_login'] as String) : null,
+      isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       roles: json['roles'] != null
@@ -100,8 +103,8 @@ class UserModel extends Equatable {
       'name': name,
       'email': email,
       'mobile': mobile,
-      'is_active': isActive ? 1 : 0,
       'last_login': lastLogin?.toIso8601String(),
+      'is_active': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -113,11 +116,11 @@ class UserModel extends Equatable {
       id: map['id'] as int?,
       username: map['username'] as String,
       password: map['password'] as String,
-      name: map['name'] as String,
+      name: map['name'] as String?,
       email: map['email'] as String?,
       mobile: map['mobile'] as String?,
-      isActive: (map['is_active'] as int) == 1,
       lastLogin: map['last_login'] != null ? DateTime.parse(map['last_login'] as String) : null,
+      isActive: map['is_active'] == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -131,8 +134,8 @@ class UserModel extends Equatable {
     name,
     email,
     mobile,
-    isActive,
     lastLogin,
+    isActive,
     createdAt,
     updatedAt,
     roles,
@@ -151,6 +154,8 @@ class RoleModel extends Equatable {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // Related models
   final List<PermissionModel>? permissions;
   
   const RoleModel({
@@ -190,7 +195,7 @@ class RoleModel extends Equatable {
       'id': id,
       'name': name,
       'description': description,
-      'is_active': isActive ? 1 : 0,
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'permissions': permissions?.map((permission) => permission.toJson()).toList(),
@@ -203,7 +208,7 @@ class RoleModel extends Equatable {
       id: json['id'] as int?,
       name: json['name'] as String,
       description: json['description'] as String?,
-      isActive: (json['is_active'] as int) == 1,
+      isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       permissions: json['permissions'] != null
@@ -230,7 +235,7 @@ class RoleModel extends Equatable {
       id: map['id'] as int?,
       name: map['name'] as String,
       description: map['description'] as String?,
-      isActive: (map['is_active'] as int) == 1,
+      isActive: map['is_active'] == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -300,7 +305,7 @@ class PermissionModel extends Equatable {
       'name': name,
       'description': description,
       'module': module,
-      'is_active': isActive ? 1 : 0,
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -313,7 +318,7 @@ class PermissionModel extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String?,
       module: json['module'] as String,
-      isActive: (json['is_active'] as int) == 1,
+      isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -339,7 +344,7 @@ class PermissionModel extends Equatable {
       name: map['name'] as String,
       description: map['description'] as String?,
       module: map['module'] as String,
-      isActive: (map['is_active'] as int) == 1,
+      isActive: map['is_active'] == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );

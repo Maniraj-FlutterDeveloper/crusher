@@ -5,8 +5,9 @@ class MaterialModel extends Equatable {
   final String name;
   final String? description;
   final int materialTypeId;
+  final double? rate;
+  final double? gstPercentage;
   final String? hsnCode;
-  final double rate;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -16,8 +17,9 @@ class MaterialModel extends Equatable {
     required this.name,
     this.description,
     required this.materialTypeId,
+    this.rate,
+    this.gstPercentage,
     this.hsnCode,
-    required this.rate,
     this.isActive = true,
     required this.createdAt,
     required this.updatedAt,
@@ -29,8 +31,9 @@ class MaterialModel extends Equatable {
     String? name,
     String? description,
     int? materialTypeId,
-    String? hsnCode,
     double? rate,
+    double? gstPercentage,
+    String? hsnCode,
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -40,8 +43,9 @@ class MaterialModel extends Equatable {
       name: name ?? this.name,
       description: description ?? this.description,
       materialTypeId: materialTypeId ?? this.materialTypeId,
-      hsnCode: hsnCode ?? this.hsnCode,
       rate: rate ?? this.rate,
+      gstPercentage: gstPercentage ?? this.gstPercentage,
+      hsnCode: hsnCode ?? this.hsnCode,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -55,9 +59,10 @@ class MaterialModel extends Equatable {
       'name': name,
       'description': description,
       'material_type_id': materialTypeId,
-      'hsn_code': hsnCode,
       'rate': rate,
-      'is_active': isActive ? 1 : 0,
+      'gst_percentage': gstPercentage,
+      'hsn_code': hsnCode,
+      'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -70,9 +75,10 @@ class MaterialModel extends Equatable {
       name: json['name'] as String,
       description: json['description'] as String?,
       materialTypeId: json['material_type_id'] as int,
+      rate: json['rate'] != null ? json['rate'] as double : null,
+      gstPercentage: json['gst_percentage'] != null ? json['gst_percentage'] as double : null,
       hsnCode: json['hsn_code'] as String?,
-      rate: json['rate'] as double,
-      isActive: (json['is_active'] as int) == 1,
+      isActive: json['is_active'] as bool,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -85,8 +91,9 @@ class MaterialModel extends Equatable {
       'name': name,
       'description': description,
       'material_type_id': materialTypeId,
-      'hsn_code': hsnCode,
       'rate': rate,
+      'gst_percentage': gstPercentage,
+      'hsn_code': hsnCode,
       'is_active': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -100,9 +107,10 @@ class MaterialModel extends Equatable {
       name: map['name'] as String,
       description: map['description'] as String?,
       materialTypeId: map['material_type_id'] as int,
+      rate: map['rate'] != null ? map['rate'] as double : null,
+      gstPercentage: map['gst_percentage'] != null ? map['gst_percentage'] as double : null,
       hsnCode: map['hsn_code'] as String?,
-      rate: map['rate'] as double,
-      isActive: (map['is_active'] as int) == 1,
+      isActive: map['is_active'] == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -114,8 +122,9 @@ class MaterialModel extends Equatable {
     name,
     description,
     materialTypeId,
-    hsnCode,
     rate,
+    gstPercentage,
+    hsnCode,
     isActive,
     createdAt,
     updatedAt,

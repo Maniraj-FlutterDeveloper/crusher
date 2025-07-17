@@ -1,29 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:flutter/foundation.dart';
 import 'package:window_size/window_size.dart';
 import 'dart:io';
 
-import 'app/routes/app_pages.dart';
 import 'app/core/theme/app_theme.dart';
 import 'app/data/services/db_service.dart';
 import 'app/data/services/storage_service.dart';
+import 'app/data/services/auth_service.dart';
+import 'app/routes/app_pages.dart';
+import 'app/routes/app_routes.dart';
+import 'app/core/values/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize sqflite_ffi for Windows
-  if (Platform.isWindows || Platform.isLinux) {
-    // Initialize FFI
-    sqfliteFfiInit();
-    // Change the default factory
-    databaseFactory = databaseFactoryFfi;
-  }
-  
   // Set minimum window size for desktop
-  if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
-    setWindowTitle('Crusher Management System');
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    setWindowTitle(AppConstants.appName);
     setWindowMinSize(const Size(1024, 768));
     setWindowMaxSize(Size.infinite);
   }
@@ -31,10 +24,10 @@ void main() async {
   // Initialize services
   await initServices();
   
-  runApp(const CrusherManagementApp());
+  runApp(const MyApp());
 }
 
-/// Initialize services before the app starts
+// Initialize services
 Future<void> initServices() async {
   print('Initializing services...');
   
@@ -44,25 +37,27 @@ Future<void> initServices() async {
   // Initialize database service
   await Get.putAsync(() => DbService().init());
   
+  // Initialize auth service
+  await Get.putAsync(() => AuthService().init());
+  
   print('All services initialized');
 }
 
-class CrusherManagementApp extends StatelessWidget {
-  const CrusherManagementApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'Crusher Management System',
+      title: AppConstants.appName,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light, // Default theme mode
-      initialRoute: AppPages.INITIAL,
+      themeMode: ThemeMode.system,
+      initialRoute: Routes.INITIAL,
       getPages: AppPages.routes,
       defaultTransition: Transition.fade,
-      locale: const Locale('en', 'US'),
-      fallbackLocale: const Locale('en', 'US'),
+      transitionDuration: const Duration(milliseconds: 200),
     );
   }
 }

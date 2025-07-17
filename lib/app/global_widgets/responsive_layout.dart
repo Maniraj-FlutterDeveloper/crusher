@@ -5,27 +5,27 @@ class ResponsiveLayout extends StatelessWidget {
   final Widget mobile;
   final Widget? tablet;
   final Widget desktop;
-
+  
   const ResponsiveLayout({
     Key? key,
     required this.mobile,
     this.tablet,
     required this.desktop,
   }) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
     return ResponsiveBuilder(
       builder: (context, deviceType, size) {
         switch (deviceType) {
-          case DeviceScreenType.mobile:
-            return mobile;
-          case DeviceScreenType.tablet:
-            return tablet ?? desktop;
           case DeviceScreenType.desktop:
             return desktop;
+          case DeviceScreenType.tablet:
+            return tablet ?? mobile;
+          case DeviceScreenType.mobile:
+            return mobile;
           default:
-            return desktop;
+            return mobile;
         }
       },
     );
@@ -34,24 +34,24 @@ class ResponsiveLayout extends StatelessWidget {
 
 class ResponsiveGridView extends StatelessWidget {
   final List<Widget> children;
-  final double spacing;
-  final double runSpacing;
   final int mobileColumns;
   final int tabletColumns;
   final int desktopColumns;
+  final double spacing;
+  final double runSpacing;
   final EdgeInsetsGeometry? padding;
-
+  
   const ResponsiveGridView({
     Key? key,
     required this.children,
-    this.spacing = 16.0,
-    this.runSpacing = 16.0,
     this.mobileColumns = 1,
     this.tabletColumns = 2,
     this.desktopColumns = 4,
+    this.spacing = 16,
+    this.runSpacing = 16,
     this.padding,
   }) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
     return ResponsiveBuilder(
@@ -59,34 +59,107 @@ class ResponsiveGridView extends StatelessWidget {
         int crossAxisCount;
         
         switch (deviceType) {
-          case DeviceScreenType.mobile:
-            crossAxisCount = mobileColumns;
+          case DeviceScreenType.desktop:
+            crossAxisCount = desktopColumns;
             break;
           case DeviceScreenType.tablet:
             crossAxisCount = tabletColumns;
             break;
-          case DeviceScreenType.desktop:
-            crossAxisCount = desktopColumns;
+          case DeviceScreenType.mobile:
+            crossAxisCount = mobileColumns;
             break;
           default:
-            crossAxisCount = desktopColumns;
+            crossAxisCount = mobileColumns;
         }
         
         return GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
           padding: padding,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: spacing,
             mainAxisSpacing: runSpacing,
-            childAspectRatio: 1.0,
+            childAspectRatio: 1,
           ),
           itemCount: children.length,
           itemBuilder: (context, index) => children[index],
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
         );
       },
     );
+  }
+}
+
+class ResponsiveRow extends StatelessWidget {
+  final List<Widget> children;
+  final MainAxisAlignment mainAxisAlignment;
+  final CrossAxisAlignment crossAxisAlignment;
+  final MainAxisSize mainAxisSize;
+  final TextDirection? textDirection;
+  final VerticalDirection verticalDirection;
+  final TextBaseline? textBaseline;
+  final double spacing;
+  
+  const ResponsiveRow({
+    Key? key,
+    required this.children,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
+    this.mainAxisSize = MainAxisSize.max,
+    this.textDirection,
+    this.verticalDirection = VerticalDirection.down,
+    this.textBaseline,
+    this.spacing = 16,
+  }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return ResponsiveBuilder(
+      builder: (context, deviceType, size) {
+        if (deviceType == DeviceScreenType.mobile) {
+          return Column(
+            mainAxisAlignment: mainAxisAlignment,
+            crossAxisAlignment: crossAxisAlignment,
+            mainAxisSize: mainAxisSize,
+            textDirection: textDirection,
+            verticalDirection: verticalDirection,
+            textBaseline: textBaseline,
+            children: _addSpacing(children, spacing, isVertical: true),
+          );
+        } else {
+          return Row(
+            mainAxisAlignment: mainAxisAlignment,
+            crossAxisAlignment: crossAxisAlignment,
+            mainAxisSize: mainAxisSize,
+            textDirection: textDirection,
+            verticalDirection: verticalDirection,
+            textBaseline: textBaseline,
+            children: _addSpacing(children, spacing, isVertical: false),
+          );
+        }
+      },
+    );
+  }
+  
+  List<Widget> _addSpacing(List<Widget> widgets, double spacing, {required bool isVertical}) {
+    if (widgets.isEmpty) return [];
+    if (widgets.length == 1) return widgets;
+    
+    final List<Widget> result = [];
+    
+    for (int i = 0; i < widgets.length; i++) {
+      result.add(widgets[i]);
+      
+      if (i < widgets.length - 1) {
+        if (isVertical) {
+          result.add(SizedBox(height: spacing));
+        } else {
+          result.add(SizedBox(width: spacing));
+        }
+      }
+    }
+    
+    return result;
   }
 }
 
@@ -102,7 +175,7 @@ class ResponsiveContainer extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final Decoration? decoration;
   final Alignment? alignment;
-
+  
   const ResponsiveContainer({
     Key? key,
     required this.child,
@@ -117,7 +190,7 @@ class ResponsiveContainer extends StatelessWidget {
     this.decoration,
     this.alignment,
   }) : super(key: key);
-
+  
   @override
   Widget build(BuildContext context) {
     return ResponsiveBuilder(
@@ -126,21 +199,21 @@ class ResponsiveContainer extends StatelessWidget {
         double? height;
         
         switch (deviceType) {
-          case DeviceScreenType.mobile:
-            width = mobileWidth;
-            height = mobileHeight;
+          case DeviceScreenType.desktop:
+            width = desktopWidth;
+            height = desktopHeight;
             break;
           case DeviceScreenType.tablet:
             width = tabletWidth;
             height = tabletHeight;
             break;
-          case DeviceScreenType.desktop:
-            width = desktopWidth;
-            height = desktopHeight;
+          case DeviceScreenType.mobile:
+            width = mobileWidth;
+            height = mobileHeight;
             break;
           default:
-            width = desktopWidth;
-            height = desktopHeight;
+            width = mobileWidth;
+            height = mobileHeight;
         }
         
         return Container(
@@ -152,61 +225,6 @@ class ResponsiveContainer extends StatelessWidget {
           alignment: alignment,
           child: child,
         );
-      },
-    );
-  }
-}
-
-class ResponsiveRow extends StatelessWidget {
-  final List<Widget> children;
-  final MainAxisAlignment mainAxisAlignment;
-  final CrossAxisAlignment crossAxisAlignment;
-  final MainAxisSize mainAxisSize;
-  final bool wrapOnMobile;
-  final WrapAlignment wrapAlignment;
-  final double spacing;
-  final double runSpacing;
-
-  const ResponsiveRow({
-    Key? key,
-    required this.children,
-    this.mainAxisAlignment = MainAxisAlignment.start,
-    this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.mainAxisSize = MainAxisSize.max,
-    this.wrapOnMobile = true,
-    this.wrapAlignment = WrapAlignment.start,
-    this.spacing = 16.0,
-    this.runSpacing = 16.0,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ResponsiveBuilder(
-      builder: (context, deviceType, size) {
-        if (deviceType == DeviceScreenType.mobile && wrapOnMobile) {
-          return Wrap(
-            spacing: spacing,
-            runSpacing: runSpacing,
-            alignment: wrapAlignment,
-            children: children,
-          );
-        } else {
-          return Row(
-            mainAxisAlignment: mainAxisAlignment,
-            crossAxisAlignment: crossAxisAlignment,
-            mainAxisSize: mainAxisSize,
-            children: children.map((child) {
-              int index = children.indexOf(child);
-              return Padding(
-                padding: EdgeInsets.only(
-                  left: index == 0 ? 0 : spacing / 2,
-                  right: index == children.length - 1 ? 0 : spacing / 2,
-                ),
-                child: child,
-              );
-            }).toList(),
-          );
-        }
       },
     );
   }
