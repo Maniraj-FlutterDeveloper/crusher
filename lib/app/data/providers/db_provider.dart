@@ -1,18 +1,13 @@
 import 'package:get/get.dart';
+import 'package:sqflite/sqflite.dart';
 import '../services/db_service.dart';
 
-class DbProvider {
+class DbProvider extends GetxService {
   final DbService _dbService = Get.find<DbService>();
   
-  // Generic CRUD operations
-  
-  // Create
-  Future<int> insert(String table, Map<String, dynamic> data) async {
-    return await _dbService.insert(table, data);
-  }
-  
-  // Read
-  Future<List<Map<String, dynamic>>> getAll(String table, {
+  // Get all records from a table
+  Future<List<Map<String, dynamic>>> getAll(
+    String table, {
     bool? distinct,
     List<String>? columns,
     String? where,
@@ -37,22 +32,26 @@ class DbProvider {
     );
   }
   
+  // Get record by id
   Future<Map<String, dynamic>?> getById(String table, int id) async {
-    final List<Map<String, dynamic>> result = await _dbService.query(
+    final List<Map<String, dynamic>> maps = await _dbService.query(
       table,
       where: 'id = ?',
       whereArgs: [id],
       limit: 1,
     );
-    
-    if (result.isNotEmpty) {
-      return result.first;
+    if (maps.isNotEmpty) {
+      return maps.first;
     }
-    
     return null;
   }
   
-  // Update
+  // Insert record
+  Future<int> insert(String table, Map<String, dynamic> data) async {
+    return await _dbService.insert(table, data);
+  }
+  
+  // Update record
   Future<int> update(String table, Map<String, dynamic> data, int id) async {
     return await _dbService.update(
       table,
@@ -62,7 +61,7 @@ class DbProvider {
     );
   }
   
-  // Delete
+  // Delete record
   Future<int> delete(String table, int id) async {
     return await _dbService.delete(
       table,
@@ -71,86 +70,14 @@ class DbProvider {
     );
   }
   
-  // Custom queries
-  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<dynamic>? arguments]) async {
-    return await _dbService.rawQuery(sql, arguments);
-  }
-  
   // Transaction
-  Future<T> transaction<T>(Future<T> Function(dynamic txn) action) async {
+  Future<T> transaction<T>(Future<T> Function(Transaction txn) action) async {
     return await _dbService.transaction(action);
   }
   
-  // Batch operations
-  Future<void> batch(Function(dynamic batch) action) async {
-    await _dbService.batch(action);
-  }
-  
-  // Specific queries for related data
-  
-  // Get user with roles
-  Future<Map<String, dynamic>?> getUserWithRoles(int userId) async {
-    final user = await getById('user', userId);
-    
-    if (user != null) {
-      final roles = await _dbService.rawQuery('''
-        SELECT r.*
-        FROM role r
-        JOIN user_role ur ON r.id = ur.role_id
-        WHERE ur.user_id = ?
-      ''', [userId]);
-      
-      user['roles'] = roles;
-    }
-    
-    return user;
-  }
-  
-  // Get role with permissions
-  Future<Map<String, dynamic>?> getRoleWithPermissions(int roleId) async {
-    final role = await getById('role', roleId);
-    
-    if (role != null) {
-      final permissions = await _dbService.rawQuery('''
-        SELECT p.*
-        FROM permission p
-        JOIN role_permission rp ON p.id = rp.permission_id
-        WHERE rp.role_id = ?
-      ''', [roleId]);
-      
-      role['permissions'] = permissions;
-    }
-    
-    return role;
-  }
-  
-  // Get gate entry with vehicle
-  Future<Map<String, dynamic>?> getGateEntryWithVehicle(int gateEntryId) async {
-    final gateEntry = await getById('gate_entry', gateEntryId);
-    
-    if (gateEntry != null) {
-      final vehicle = await getById('vehicle_master', gateEntry['vehicle_id']);
-      gateEntry['vehicle'] = vehicle;
-    }
-    
-    return gateEntry;
-  }
-  
-  // Get invoice with items
-  Future<Map<String, dynamic>?> getInvoiceWithItems(int invoiceId) async {
-    final invoice = await getById('invoice', invoiceId);
-    
-    if (invoice != null) {
-      final items = await _dbService.query(
-        'invoice_item',
-        where: 'invoice_id = ?',
-        whereArgs: [invoiceId],
-      );
-      
-      invoice['items'] = items;
-    }
-    
-    return invoice;
+  // Raw query
+  Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<dynamic>? arguments]) async {
+    return await _dbService.rawQuery(sql, arguments);
   }
   
   // Get active vehicles
@@ -160,56 +87,6 @@ class DbProvider {
       where: 'is_active = ?',
       whereArgs: [1],
       orderBy: 'vehicle_number ASC',
-    );
-  }
-  
-  // Get active materials
-  Future<List<Map<String, dynamic>>> getActiveMaterials() async {
-    return await _dbService.query(
-      'material_master',
-      where: 'is_active = ?',
-      whereArgs: [1],
-      orderBy: 'name ASC',
-    );
-  }
-  
-  // Get active stone sizes
-  Future<List<Map<String, dynamic>>> getActiveStoneSizes() async {
-    return await _dbService.query(
-      'stone_size_master',
-      where: 'is_active = ?',
-      whereArgs: [1],
-      orderBy: 'size ASC',
-    );
-  }
-  
-  // Get active suppliers
-  Future<List<Map<String, dynamic>>> getActiveSuppliers() async {
-    return await _dbService.query(
-      'supplier_master',
-      where: 'is_active = ?',
-      whereArgs: [1],
-      orderBy: 'name ASC',
-    );
-  }
-  
-  // Get active buyers
-  Future<List<Map<String, dynamic>>> getActiveBuyers() async {
-    return await _dbService.query(
-      'buyer_master',
-      where: 'is_active = ?',
-      whereArgs: [1],
-      orderBy: 'name ASC',
-    );
-  }
-  
-  // Get weight units
-  Future<List<Map<String, dynamic>>> getWeightUnits() async {
-    return await _dbService.query(
-      'weight_unit_type',
-      where: 'is_active = ?',
-      whereArgs: [1],
-      orderBy: 'name ASC',
     );
   }
   
@@ -233,6 +110,54 @@ class DbProvider {
     );
   }
   
+  // Get gate entry with vehicle
+  Future<Map<String, dynamic>?> getGateEntryWithVehicle(int id) async {
+    final List<Map<String, dynamic>> maps = await _dbService.rawQuery(
+      '''
+      SELECT ge.*, vm.* FROM gate_entry ge
+      LEFT JOIN vehicle_master vm ON ge.vehicle_id = vm.id
+      WHERE ge.id = ?
+      ''',
+      [id],
+    );
+    
+    if (maps.isNotEmpty) {
+      final Map<String, dynamic> result = {...maps.first};
+      
+      // Extract vehicle data
+      final Map<String, dynamic> vehicle = {};
+      for (var key in maps.first.keys) {
+        if (key.startsWith('vehicle_')) {
+          vehicle[key] = maps.first[key];
+        }
+      }
+      
+      if (vehicle.isNotEmpty) {
+        result['vehicle'] = vehicle;
+      }
+      
+      return result;
+    }
+    
+    return null;
+  }
+  
+  // Get weighbridge record by gate entry
+  Future<Map<String, dynamic>?> getWeighbridgeRecordByGateEntry(int gateEntryId) async {
+    final List<Map<String, dynamic>> maps = await _dbService.query(
+      'weighbridge_record',
+      where: 'gate_entry_id = ?',
+      whereArgs: [gateEntryId],
+      limit: 1,
+    );
+    
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    
+    return null;
+  }
+  
   // Get invoices by status
   Future<List<Map<String, dynamic>>> getInvoicesByStatus(String status) async {
     return await _dbService.query(
@@ -253,59 +178,137 @@ class DbProvider {
     );
   }
   
-  // Get material loading by gate entry
-  Future<List<Map<String, dynamic>>> getMaterialLoadingByGateEntry(int gateEntryId) async {
-    return await _dbService.query(
-      'material_loading',
-      where: 'gate_entry_id = ?',
-      whereArgs: [gateEntryId],
-      orderBy: 'created_at DESC',
-    );
-  }
-  
-  // Get weighbridge record by gate entry
-  Future<Map<String, dynamic>?> getWeighbridgeRecordByGateEntry(int gateEntryId) async {
-    final List<Map<String, dynamic>> result = await _dbService.query(
-      'weighbridge_record',
-      where: 'gate_entry_id = ?',
-      whereArgs: [gateEntryId],
-      limit: 1,
-    );
-    
-    if (result.isNotEmpty) {
-      return result.first;
+  // Get invoice with items
+  Future<Map<String, dynamic>?> getInvoiceWithItems(int id) async {
+    final Map<String, dynamic>? invoice = await getById('invoice', id);
+    if (invoice != null) {
+      final List<Map<String, dynamic>> items = await _dbService.query(
+        'invoice_item',
+        where: 'invoice_id = ?',
+        whereArgs: [id],
+      );
+      
+      invoice['items'] = items;
+      return invoice;
     }
     
     return null;
   }
   
-  // Get audit logs by module
-  Future<List<Map<String, dynamic>>> getAuditLogsByModule(String module, {int? limit, int? offset}) async {
+  // Get material types
+  Future<List<Map<String, dynamic>>> getMaterialTypes() async {
     return await _dbService.query(
-      'audit_log',
-      where: 'module = ?',
-      whereArgs: [module],
-      orderBy: 'created_at DESC',
-      limit: limit,
-      offset: offset,
+      'material_type_master',
+      where: 'is_active = ?',
+      whereArgs: [1],
+      orderBy: 'name ASC',
     );
   }
   
-  // Get audit logs by user
-  Future<List<Map<String, dynamic>>> getAuditLogsByUser(int userId, {int? limit, int? offset}) async {
+  // Get stone sizes
+  Future<List<Map<String, dynamic>>> getStoneSizes() async {
     return await _dbService.query(
-      'audit_log',
-      where: 'user_id = ?',
-      whereArgs: [userId],
-      orderBy: 'created_at DESC',
-      limit: limit,
-      offset: offset,
+      'stone_size_master',
+      where: 'is_active = ?',
+      whereArgs: [1],
+      orderBy: 'size ASC',
     );
   }
   
-  // Insert audit log
-  Future<int> insertAuditLog(Map<String, dynamic> data) async {
-    return await _dbService.insert('audit_log', data);
+  // Get weight units
+  Future<List<Map<String, dynamic>>> getWeightUnits() async {
+    return await _dbService.query(
+      'weight_unit_type',
+      where: 'is_active = ?',
+      whereArgs: [1],
+      orderBy: 'name ASC',
+    );
+  }
+  
+  // Get suppliers
+  Future<List<Map<String, dynamic>>> getSuppliers() async {
+    return await _dbService.query(
+      'supplier_master',
+      where: 'is_active = ?',
+      whereArgs: [1],
+      orderBy: 'name ASC',
+    );
+  }
+  
+  // Get buyers
+  Future<List<Map<String, dynamic>>> getBuyers() async {
+    return await _dbService.query(
+      'buyer_master',
+      where: 'is_active = ?',
+      whereArgs: [1],
+      orderBy: 'name ASC',
+    );
+  }
+  
+  // Get user by username
+  Future<Map<String, dynamic>?> getUserByUsername(String username) async {
+    final List<Map<String, dynamic>> maps = await _dbService.query(
+      'user',
+      where: 'username = ?',
+      whereArgs: [username],
+      limit: 1,
+    );
+    
+    if (maps.isNotEmpty) {
+      return maps.first;
+    }
+    
+    return null;
+  }
+  
+  // Get user roles
+  Future<List<Map<String, dynamic>>> getUserRoles(int userId) async {
+    return await _dbService.rawQuery(
+      '''
+      SELECT r.* FROM role r
+      JOIN user_role ur ON r.id = ur.role_id
+      WHERE ur.user_id = ?
+      ''',
+      [userId],
+    );
+  }
+  
+  // Get role permissions
+  Future<List<Map<String, dynamic>>> getRolePermissions(int roleId) async {
+    return await _dbService.rawQuery(
+      '''
+      SELECT p.* FROM permission p
+      JOIN role_permission rp ON p.id = rp.permission_id
+      WHERE rp.role_id = ?
+      ''',
+      [roleId],
+    );
+  }
+  
+  // Get user with roles and permissions
+  Future<Map<String, dynamic>?> getUserWithRolesAndPermissions(int userId) async {
+    final Map<String, dynamic>? user = await getById('user', userId);
+    if (user != null) {
+      final List<Map<String, dynamic>> roles = await getUserRoles(userId);
+      
+      final List<Map<String, dynamic>> rolesWithPermissions = [];
+      for (var role in roles) {
+        final List<Map<String, dynamic>> permissions = await getRolePermissions(role['id']);
+        role['permissions'] = permissions;
+        rolesWithPermissions.add(role);
+      }
+      
+      user['roles'] = rolesWithPermissions;
+      return user;
+    }
+    
+    return null;
+  }
+  
+  // Initialize database service
+  Future<DbProvider> init() async {
+    await _dbService.init();
+    return this;
   }
 }
 

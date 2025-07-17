@@ -1,104 +1,138 @@
 import 'package:get/get.dart';
 import '../models/user_model.dart';
-import '../repositories/user_repository.dart';
+import '../providers/db_provider.dart';
 import 'storage_service.dart';
 import '../../core/values/app_constants.dart';
 
 class AuthService extends GetxService {
   static AuthService get to => Get.find<AuthService>();
   
-  final UserRepository _userRepository = Get.find<UserRepository>();
+  final DbProvider _dbProvider = Get.find<DbProvider>();
   final StorageService _storageService = Get.find<StorageService>();
   
   final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
+  final RxBool _isLoggedIn = false.obs;
+  
+  // Get current user
   UserModel? get currentUser => _currentUser.value;
+  
+  // Check if user is logged in
+  bool get isLoggedIn => _isLoggedIn.value;
   
   // Initialize auth service
   Future<AuthService> init() async {
-    // Check if user is already logged in
-    await _loadUserFromStorage();
-    print('Auth service initialized');
-    return this;
-  }
-  
-  // Load user from storage
-  Future<void> _loadUserFromStorage() async {
-    final Map<String, dynamic>? userData = _storageService.getObject(AppConstants.storageUserKey);
-    
-    if (userData != null) {
+    // Check if user is logged in
+    final String? userJson = _storageService.getString(AppConstants.storageUserKey);
+    if (userJson != null) {
       try {
-        final UserModel user = UserModel.fromJson(userData);
-        _currentUser.value = user;
-        print('User loaded from storage: ${user.username}');
+        final Map<String, dynamic> userMap = _storageService.getObject(AppConstants.storageUserKey)!;
+        _currentUser.value = UserModel.fromJson(userMap);
+        _isLoggedIn.value = true;
+        print('User logged in: ${_currentUser.value!.username}');
       } catch (e) {
-        print('Error loading user from storage: $e');
-        await _storageService.remove(AppConstants.storageUserKey);
+        print('Error parsing user data: $e');
+        await logout();
       }
     }
-  }
-  
-  // Save user to storage
-  Future<void> _saveUserToStorage(UserModel user) async {
-    await _storageService.setObject(AppConstants.storageUserKey, user.toJson());
+    
+    print('Auth service initialized');
+    return this;
   }
   
   // Login
   Future<bool> login(String username, String password) async {
     try {
-      final UserModel? user = await _userRepository.authenticateUser(username, password);
-      
-      if (user != null) {
-        _currentUser.value = user;
-        await _saveUserToStorage(user);
-        return true;
+      final Map<String, dynamic>? userMap = await _dbProvider.getUserByUsername(username);
+      if (userMap != null && userMap['password'] == password) {
+        // Get user with roles and permissions
+        final Map<String, dynamic>? userWithRoles = await _dbProvider.getUserWithRolesAndPermissions(userMap['id']);
+        if (userWithRoles != null) {
+          // Create user model
+          final UserModel user = UserModel.fromJson(userWithRoles);
+          
+          // Update last login
+          await _dbProvider.update(
+            'user',
+            {
+              'last_login': DateTime.now().toIso8601String(),
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            user.id!,
+          );
+          
+          // Save user to storage
+          await _storageService.setObject(AppConstants.storageUserKey, user.toJson());
+          
+          // Set current user
+          _currentUser.value = user;
+          _isLoggedIn.value = true;
+          
+          return true;
+        }
       }
       
       return false;
     } catch (e) {
-      print('Error during login: $e');
+      print('Error logging in: $e');
       return false;
     }
   }
   
   // Logout
   Future<void> logout() async {
-    _currentUser.value = null;
-    await _storageService.remove(AppConstants.storageUserKey);
-  }
-  
-  // Check if user is logged in
-  bool isLoggedIn() {
-    return _currentUser.value != null;
+    try {
+      await _storageService.remove(AppConstants.storageUserKey);
+      _currentUser.value = null;
+      _isLoggedIn.value = false;
+    } catch (e) {
+      print('Error logging out: $e');
+    }
   }
   
   // Check if user has permission
-  Future<bool> hasPermission(String permissionName) async {
-    if (!isLoggedIn() || _currentUser.value!.id == null) {
+  bool hasPermission(String permission) {
+    if (_currentUser.value == null || _currentUser.value!.roles == null) {
       return false;
     }
     
-    return await _userRepository.hasPermission(_currentUser.value!.id!, permissionName);
+    for (var role in _currentUser.value!.roles!) {
+      if (role.permissions != null) {
+        for (var perm in role.permissions!) {
+          if (perm.name == permission) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    return false;
   }
   
   // Check if user has role
-  Future<bool> hasRole(String roleName) async {
-    if (!isLoggedIn() || _currentUser.value!.id == null) {
+  bool hasRole(String role) {
+    if (_currentUser.value == null || _currentUser.value!.roles == null) {
       return false;
     }
     
-    return await _userRepository.hasRole(_currentUser.value!.id!, roleName);
-  }
-  
-  // Refresh user data
-  Future<void> refreshUserData() async {
-    if (isLoggedIn() && _currentUser.value!.id != null) {
-      final UserModel? user = await _userRepository.getUserWithRoles(_currentUser.value!.id!);
-      
-      if (user != null) {
-        _currentUser.value = user;
-        await _saveUserToStorage(user);
+    for (var r in _currentUser.value!.roles!) {
+      if (r.name == role) {
+        return true;
       }
     }
+    
+    return false;
   }
+  
+  // Check if user is admin
+  bool get isAdmin => hasRole(AppConstants.roleAdmin);
+  
+  // Check if user is supervisor
+  bool get isSupervisor => hasRole(AppConstants.roleSupervisor);
+  
+  // Check if user is billing operator
+  bool get isBillingOperator => hasRole(AppConstants.roleBilling);
+  
+  // Check if user is operator
+  bool get isOperator => hasRole(AppConstants.roleOperator);
 }
 

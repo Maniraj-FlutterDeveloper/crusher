@@ -5,11 +5,9 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
-
 import '../models/gate_entry_model.dart';
 import '../models/weighbridge_record_model.dart';
 import '../models/invoice_model.dart';
-import '../models/vehicle_model.dart';
 import '../../core/values/app_constants.dart';
 
 class PdfService extends GetxService {
@@ -22,11 +20,8 @@ class PdfService extends GetxService {
   }
   
   // Generate gate pass PDF
-  Future<File> generateGatePass(GateEntryModel gateEntry, VehicleModel vehicle) async {
+  Future<File> generateGatePass(GateEntryModel gateEntry) async {
     final pdf = pw.Document();
-    
-    final dateFormat = DateFormat(AppConstants.dateFormat);
-    final timeFormat = DateFormat(AppConstants.timeFormat);
     
     pdf.addPage(
       pw.Page(
@@ -35,151 +30,23 @@ class PdfService extends GetxService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Center(
-                child: pw.Text(
-                  'GATE PASS',
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Gate Pass No:'),
-                  pw.Text(gateEntry.gatePassNumber ?? 'N/A', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Session ID:'),
-                  pw.Text(gateEntry.sessionId, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Date:'),
-                  pw.Text(dateFormat.format(gateEntry.entryTime)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Time:'),
-                  pw.Text(timeFormat.format(gateEntry.entryTime)),
-                ],
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Text('Vehicle Details', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Vehicle Number:'),
-                  pw.Text(vehicle.vehicleNumber, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Vehicle Type:'),
-                  pw.Text(vehicle.vehicleType ?? 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Driver Name:'),
-                  pw.Text(gateEntry.driverName ?? 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Driver Mobile:'),
-                  pw.Text(gateEntry.driverMobile ?? 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Text('Weight Details', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Tare Weight:'),
-                  pw.Text(gateEntry.tareWeight != null ? '${gateEntry.tareWeight} kg' : 'N/A'),
-                ],
-              ),
+              _buildHeader('GATE PASS'),
               pw.SizedBox(height: 20),
-              pw.Divider(),
+              _buildGatePassDetails(gateEntry),
               pw.SizedBox(height: 20),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('___________________'),
-                      pw.SizedBox(height: 5),
-                      pw.Text('Operator Signature'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('___________________'),
-                      pw.SizedBox(height: 5),
-                      pw.Text('Driver Signature'),
-                    ],
-                  ),
-                ],
-              ),
-              pw.Spacer(),
-              pw.Center(
-                child: pw.Text(
-                  'Crusher Management System',
-                  style: pw.TextStyle(
-                    fontSize: 10,
-                    fontStyle: pw.FontStyle.italic,
-                  ),
-                ),
-              ),
+              _buildFooter(),
             ],
           );
         },
       ),
     );
     
-    // Save the PDF
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/gate_pass_${gateEntry.sessionId}.pdf');
-    await file.writeAsBytes(await pdf.save());
-    
-    return file;
+    return await _savePdf('gate_pass_${gateEntry.gatePassNumber}.pdf', pdf);
   }
   
   // Generate weigh slip PDF
-  Future<File> generateWeighSlip(WeighbridgeRecordModel weighbridgeRecord, GateEntryModel gateEntry, VehicleModel vehicle) async {
+  Future<File> generateWeighSlip(WeighbridgeRecordModel weighbridgeRecord, GateEntryModel gateEntry) async {
     final pdf = pw.Document();
-    
-    final dateFormat = DateFormat(AppConstants.dateFormat);
-    final timeFormat = DateFormat(AppConstants.timeFormat);
     
     pdf.addPage(
       pw.Page(
@@ -188,150 +55,23 @@ class PdfService extends GetxService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Center(
-                child: pw.Text(
-                  'WEIGH SLIP',
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Session ID:'),
-                  pw.Text(gateEntry.sessionId, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Date:'),
-                  pw.Text(dateFormat.format(gateEntry.entryTime)),
-                ],
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Text('Vehicle Details', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Vehicle Number:'),
-                  pw.Text(vehicle.vehicleNumber, style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Driver Name:'),
-                  pw.Text(gateEntry.driverName ?? 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Text('Weight Details', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Tare Weight:'),
-                  pw.Text(weighbridgeRecord.tareWeight != null ? '${weighbridgeRecord.tareWeight} kg' : 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Tare Weight Time:'),
-                  pw.Text(weighbridgeRecord.tareWeightTime != null ? timeFormat.format(weighbridgeRecord.tareWeightTime!) : 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Gross Weight:'),
-                  pw.Text(weighbridgeRecord.grossWeight != null ? '${weighbridgeRecord.grossWeight} kg' : 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Gross Weight Time:'),
-                  pw.Text(weighbridgeRecord.grossWeightTime != null ? timeFormat.format(weighbridgeRecord.grossWeightTime!) : 'N/A'),
-                ],
-              ),
-              pw.SizedBox(height: 5),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Text('Net Weight:'),
-                  pw.Text(weighbridgeRecord.netWeight != null ? '${weighbridgeRecord.netWeight} kg' : 'N/A', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                ],
-              ),
+              _buildHeader('WEIGH SLIP'),
               pw.SizedBox(height: 20),
-              pw.Divider(),
+              _buildWeighSlipDetails(weighbridgeRecord, gateEntry),
               pw.SizedBox(height: 20),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('___________________'),
-                      pw.SizedBox(height: 5),
-                      pw.Text('Operator Signature'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('___________________'),
-                      pw.SizedBox(height: 5),
-                      pw.Text('Driver Signature'),
-                    ],
-                  ),
-                ],
-              ),
-              pw.Spacer(),
-              pw.Center(
-                child: pw.Text(
-                  'Crusher Management System',
-                  style: pw.TextStyle(
-                    fontSize: 10,
-                    fontStyle: pw.FontStyle.italic,
-                  ),
-                ),
-              ),
+              _buildFooter(),
             ],
           );
         },
       ),
     );
     
-    // Save the PDF
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/weigh_slip_${gateEntry.sessionId}.pdf');
-    await file.writeAsBytes(await pdf.save());
-    
-    return file;
+    return await _savePdf('weigh_slip_${gateEntry.sessionId}.pdf', pdf);
   }
   
   // Generate invoice PDF
-  Future<File> generateInvoice(InvoiceModel invoice, String buyerName, String vehicleNumber) async {
+  Future<File> generateInvoice(InvoiceModel invoice, GateEntryModel gateEntry) async {
     final pdf = pw.Document();
-    
-    final dateFormat = DateFormat(AppConstants.dateFormat);
     
     pdf.addPage(
       pw.Page(
@@ -340,280 +80,460 @@ class PdfService extends GetxService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Center(
-                child: pw.Text(
-                  'TAX INVOICE',
-                  style: pw.TextStyle(
-                    fontSize: 20,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-              ),
-              pw.SizedBox(height: 10),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('Crusher Management System', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Address Line 1'),
-                      pw.Text('Address Line 2'),
-                      pw.Text('Phone: 1234567890'),
-                      pw.Text('Email: info@crusher.com'),
-                      pw.Text('GSTIN: 12ABCDE1234F1Z5'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text('Invoice No: ${invoice.invoiceNumber}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Date: ${dateFormat.format(invoice.invoiceDate)}'),
-                      pw.Text('Status: ${invoice.status}'),
-                    ],
-                  ),
-                ],
-              ),
+              _buildHeader('TAX INVOICE'),
               pw.SizedBox(height: 20),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('Bill To:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text(buyerName),
-                      pw.Text('Buyer Address Line 1'),
-                      pw.Text('Buyer Address Line 2'),
-                      pw.Text('GSTIN: 12ABCDE1234F1Z5'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text('Vehicle No: $vehicleNumber', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('Session ID: ${invoice.gateEntryId}'),
-                    ],
-                  ),
-                ],
-              ),
+              _buildInvoiceDetails(invoice, gateEntry),
               pw.SizedBox(height: 20),
-              pw.Table(
-                border: pw.TableBorder.all(),
-                columnWidths: {
-                  0: pw.FlexColumnWidth(1),
-                  1: pw.FlexColumnWidth(3),
-                  2: pw.FlexColumnWidth(1),
-                  3: pw.FlexColumnWidth(1),
-                  4: pw.FlexColumnWidth(1),
-                  5: pw.FlexColumnWidth(1.5),
-                },
-                children: [
-                  pw.TableRow(
-                    decoration: pw.BoxDecoration(color: PdfColors.grey300),
-                    children: [
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text('S.No.', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text('Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text('Qty', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text('Unit', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text('Rate', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                      pw.Padding(
-                        padding: pw.EdgeInsets.all(5),
-                        child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      ),
-                    ],
-                  ),
-                  // Add invoice items here
-                  if (invoice.items != null)
-                    ...invoice.items!.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final item = entry.value;
-                      return pw.TableRow(
-                        children: [
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(5),
-                            child: pw.Text('${index + 1}'),
-                          ),
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(5),
-                            child: pw.Text('Material ${item.materialId}'),
-                          ),
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(5),
-                            child: pw.Text('${item.quantity}'),
-                          ),
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(5),
-                            child: pw.Text('kg'),
-                          ),
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(5),
-                            child: pw.Text('${item.rate}'),
-                          ),
-                          pw.Padding(
-                            padding: pw.EdgeInsets.all(5),
-                            child: pw.Text('${item.amount}'),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                ],
-              ),
+              _buildInvoiceItems(invoice),
               pw.SizedBox(height: 20),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.end,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Row(
-                        children: [
-                          pw.Container(
-                            width: 150,
-                            child: pw.Text('Base Amount:'),
-                          ),
-                          pw.Container(
-                            width: 100,
-                            child: pw.Text('₹ ${invoice.baseAmount.toStringAsFixed(2)}'),
-                          ),
-                        ],
-                      ),
-                      pw.SizedBox(height: 5),
-                      pw.Row(
-                        children: [
-                          pw.Container(
-                            width: 150,
-                            child: pw.Text('CGST (9%):'),
-                          ),
-                          pw.Container(
-                            width: 100,
-                            child: pw.Text('₹ ${invoice.cgstAmount.toStringAsFixed(2)}'),
-                          ),
-                        ],
-                      ),
-                      pw.SizedBox(height: 5),
-                      pw.Row(
-                        children: [
-                          pw.Container(
-                            width: 150,
-                            child: pw.Text('SGST (9%):'),
-                          ),
-                          pw.Container(
-                            width: 100,
-                            child: pw.Text('₹ ${invoice.sgstAmount.toStringAsFixed(2)}'),
-                          ),
-                        ],
-                      ),
-                      pw.SizedBox(height: 5),
-                      pw.Row(
-                        children: [
-                          pw.Container(
-                            width: 150,
-                            child: pw.Text('IGST (0%):'),
-                          ),
-                          pw.Container(
-                            width: 100,
-                            child: pw.Text('₹ ${invoice.igstAmount.toStringAsFixed(2)}'),
-                          ),
-                        ],
-                      ),
-                      pw.SizedBox(height: 5),
-                      pw.Divider(),
-                      pw.SizedBox(height: 5),
-                      pw.Row(
-                        children: [
-                          pw.Container(
-                            width: 150,
-                            child: pw.Text('Total Amount:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                          ),
-                          pw.Container(
-                            width: 100,
-                            child: pw.Text('₹ ${invoice.totalAmount.toStringAsFixed(2)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 30),
-              pw.Divider(),
-              pw.SizedBox(height: 10),
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text('Terms & Conditions:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                      pw.Text('1. Payment due within 30 days'),
-                      pw.Text('2. Goods once sold will not be taken back'),
-                      pw.Text('3. Interest @18% p.a. will be charged on delayed payments'),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.center,
-                    children: [
-                      pw.Text('For Crusher Management System'),
-                      pw.SizedBox(height: 40),
-                      pw.Text('Authorized Signatory'),
-                    ],
-                  ),
-                ],
-              ),
-              pw.Spacer(),
-              pw.Center(
-                child: pw.Text(
-                  'This is a computer generated invoice and does not require a signature',
-                  style: pw.TextStyle(
-                    fontSize: 10,
-                    fontStyle: pw.FontStyle.italic,
-                  ),
-                ),
-              ),
+              _buildInvoiceSummary(invoice),
+              pw.SizedBox(height: 20),
+              _buildFooter(),
             ],
           );
         },
       ),
     );
     
-    // Save the PDF
+    return await _savePdf('invoice_${invoice.invoiceNumber}.pdf', pdf);
+  }
+  
+  // Build header
+  pw.Widget _buildHeader(String title) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.center,
+      children: [
+        pw.Text(
+          'CRUSHER MANAGEMENT SYSTEM',
+          style: pw.TextStyle(
+            fontSize: 18,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+        pw.SizedBox(height: 5),
+        pw.Text(
+          title,
+          style: pw.TextStyle(
+            fontSize: 16,
+            fontWeight: pw.FontWeight.bold,
+          ),
+        ),
+        pw.SizedBox(height: 5),
+        pw.Divider(),
+      ],
+    );
+  }
+  
+  // Build gate pass details
+  pw.Widget _buildGatePassDetails(GateEntryModel gateEntry) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Gate Pass No: ${gateEntry.gatePassNumber}'),
+            pw.Text('Date: ${DateFormat(AppConstants.dateFormat).format(gateEntry.entryTime)}'),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Session ID: ${gateEntry.sessionId}'),
+            pw.Text('Time: ${DateFormat(AppConstants.timeFormat).format(gateEntry.entryTime)}'),
+          ],
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text('Vehicle Details:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 5),
+        pw.Text('Vehicle No: ${gateEntry.vehicle?.vehicleNumber ?? "N/A"}'),
+        pw.Text('Driver Name: ${gateEntry.driverName ?? "N/A"}'),
+        pw.Text('Driver Mobile: ${gateEntry.driverMobile ?? "N/A"}'),
+        pw.SizedBox(height: 20),
+        pw.Text('Entry Details:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 5),
+        pw.Text('Tare Weight: ${gateEntry.tareWeight != null ? "${gateEntry.tareWeight} kg" : "N/A"}'),
+        pw.Text('Status: ${gateEntry.status}'),
+        pw.Text('Remarks: ${gateEntry.remarks ?? "N/A"}'),
+      ],
+    );
+  }
+  
+  // Build weigh slip details
+  pw.Widget _buildWeighSlipDetails(WeighbridgeRecordModel weighbridgeRecord, GateEntryModel gateEntry) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Session ID: ${gateEntry.sessionId}'),
+            pw.Text('Date: ${DateFormat(AppConstants.dateFormat).format(gateEntry.entryTime)}'),
+          ],
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text('Vehicle Details:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 5),
+        pw.Text('Vehicle No: ${gateEntry.vehicle?.vehicleNumber ?? "N/A"}'),
+        pw.Text('Driver Name: ${gateEntry.driverName ?? "N/A"}'),
+        pw.SizedBox(height: 20),
+        pw.Text('Weight Details:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 5),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Tare Weight:'),
+            pw.Text('${weighbridgeRecord.tareWeight != null ? "${weighbridgeRecord.tareWeight} kg" : "N/A"}'),
+          ],
+        ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Gross Weight:'),
+            pw.Text('${weighbridgeRecord.grossWeight != null ? "${weighbridgeRecord.grossWeight} kg" : "N/A"}'),
+          ],
+        ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Net Weight:'),
+            pw.Text('${weighbridgeRecord.netWeight != null ? "${weighbridgeRecord.netWeight} kg" : "N/A"}'),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Tare Time:'),
+            pw.Text('${weighbridgeRecord.tareWeightTime != null ? DateFormat(AppConstants.timeFormat).format(weighbridgeRecord.tareWeightTime!) : "N/A"}'),
+          ],
+        ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Gross Time:'),
+            pw.Text('${weighbridgeRecord.grossWeightTime != null ? DateFormat(AppConstants.timeFormat).format(weighbridgeRecord.grossWeightTime!) : "N/A"}'),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  // Build invoice details
+  pw.Widget _buildInvoiceDetails(InvoiceModel invoice, GateEntryModel gateEntry) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Invoice No: ${invoice.invoiceNumber}'),
+            pw.Text('Date: ${DateFormat(AppConstants.dateFormat).format(invoice.invoiceDate)}'),
+          ],
+        ),
+        pw.SizedBox(height: 10),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Text('Session ID: ${gateEntry.sessionId}'),
+            pw.Text('Status: ${invoice.status}'),
+          ],
+        ),
+        pw.SizedBox(height: 20),
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Buyer Details:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 5),
+                  pw.Text('Name: ${invoice.buyerName ?? "N/A"}'),
+                  pw.Text('GSTIN: ${invoice.buyerGstin ?? "N/A"}'),
+                  pw.Text('Address: ${invoice.buyerAddress ?? "N/A"}'),
+                ],
+              ),
+            ),
+            pw.Expanded(
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  pw.Text('Vehicle Details:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 5),
+                  pw.Text('Vehicle No: ${gateEntry.vehicle?.vehicleNumber ?? "N/A"}'),
+                  pw.Text('Driver Name: ${gateEntry.driverName ?? "N/A"}'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  // Build invoice items
+  pw.Widget _buildInvoiceItems(InvoiceModel invoice) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text('Invoice Items:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+        pw.SizedBox(height: 5),
+        pw.Table(
+          border: pw.TableBorder.all(),
+          columnWidths: {
+            0: const pw.FlexColumnWidth(1),
+            1: const pw.FlexColumnWidth(3),
+            2: const pw.FlexColumnWidth(1),
+            3: const pw.FlexColumnWidth(1),
+            4: const pw.FlexColumnWidth(1),
+            5: const pw.FlexColumnWidth(1),
+          },
+          children: [
+            pw.TableRow(
+              decoration: pw.BoxDecoration(color: PdfColors.grey300),
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('S.No.', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('Description', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('HSN Code', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('Quantity', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('Rate', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text('Amount', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                ),
+              ],
+            ),
+            if (invoice.items != null)
+              ...List.generate(invoice.items!.length, (index) {
+                final item = invoice.items![index];
+                return pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('${index + 1}'),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(item.materialName ?? 'N/A'),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(item.hsnCode ?? 'N/A'),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('${item.quantity} ${item.weightUnitSymbol ?? ""}'),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('${item.rate}'),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text('${item.amount}'),
+                    ),
+                  ],
+                );
+              }),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  // Build invoice summary
+  pw.Widget _buildInvoiceSummary(InvoiceModel invoice) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.end,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Row(
+                  children: [
+                    pw.Text('Base Amount: '),
+                    pw.SizedBox(width: 10),
+                    pw.Text('${invoice.baseAmount}'),
+                  ],
+                ),
+                pw.SizedBox(height: 5),
+                pw.Row(
+                  children: [
+                    pw.Text('CGST (${invoice.cgstPercentage}%): '),
+                    pw.SizedBox(width: 10),
+                    pw.Text('${invoice.cgstAmount}'),
+                  ],
+                ),
+                pw.Row(
+                  children: [
+                    pw.Text('SGST (${invoice.sgstPercentage}%): '),
+                    pw.SizedBox(width: 10),
+                    pw.Text('${invoice.sgstAmount}'),
+                  ],
+                ),
+                pw.Row(
+                  children: [
+                    pw.Text('IGST (${invoice.igstPercentage}%): '),
+                    pw.SizedBox(width: 10),
+                    pw.Text('${invoice.igstAmount}'),
+                  ],
+                ),
+                pw.SizedBox(height: 5),
+                pw.Divider(),
+                pw.Row(
+                  children: [
+                    pw.Text('Total Amount: ', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(width: 10),
+                    pw.Text('${invoice.totalAmount}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 20),
+        pw.Text('Amount in words: ${_convertNumberToWords(invoice.totalAmount)} only', style: pw.TextStyle(fontStyle: pw.FontStyle.italic)),
+        pw.SizedBox(height: 20),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Terms & Conditions:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 5),
+                pw.Text('1. Goods once sold will not be taken back.'),
+                pw.Text('2. Interest @18% p.a. will be charged if payment is not made within due date.'),
+                pw.Text('3. Subject to local jurisdiction.'),
+              ],
+            ),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                pw.Text('For Crusher Management System', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 40),
+                pw.Text('Authorized Signatory'),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  // Build footer
+  pw.Widget _buildFooter() {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.center,
+      children: [
+        pw.Divider(),
+        pw.SizedBox(height: 5),
+        pw.Text('This is a computer generated document. No signature required.'),
+        pw.SizedBox(height: 5),
+        pw.Text('Crusher Management System - ${AppConstants.appVersion}'),
+      ],
+    );
+  }
+  
+  // Save PDF to file
+  Future<File> _savePdf(String fileName, pw.Document pdf) async {
     final output = await getTemporaryDirectory();
-    final file = File('${output.path}/invoice_${invoice.invoiceNumber}.pdf');
+    final file = File('${output.path}/$fileName');
     await file.writeAsBytes(await pdf.save());
-    
     return file;
   }
   
   // Print PDF
   Future<void> printPdf(File pdfFile) async {
     await Printing.layoutPdf(
-      onLayout: (_) => pdfFile.readAsBytes(),
+      onLayout: (_) async => pdfFile.readAsBytes(),
     );
   }
   
-  // Share PDF
-  Future<void> sharePdf(File pdfFile) async {
-    await Printing.sharePdf(bytes: await pdfFile.readAsBytes(), filename: pdfFile.path.split('/').last);
+  // Convert number to words
+  String _convertNumberToWords(double number) {
+    // This is a simplified implementation
+    // For a production app, use a more comprehensive library
+    
+    final units = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    final tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    
+    if (number == 0) {
+      return 'Zero';
+    }
+    
+    // Split the number into integer and decimal parts
+    final int intPart = number.toInt();
+    final int decimalPart = ((number - intPart) * 100).round();
+    
+    String words = '';
+    
+    if (intPart > 0) {
+      if (intPart >= 10000000) {
+        words += '${_convertNumberToWords(intPart / 10000000)} Crore ';
+        number %= 10000000;
+      }
+      
+      if (intPart >= 100000) {
+        words += '${_convertNumberToWords(intPart / 100000)} Lakh ';
+        number %= 100000;
+      }
+      
+      if (intPart >= 1000) {
+        words += '${_convertNumberToWords(intPart / 1000)} Thousand ';
+        number %= 1000;
+      }
+      
+      if (intPart >= 100) {
+        words += '${units[intPart ~/ 100]} Hundred ';
+        number %= 100;
+      }
+      
+      if (intPart > 0) {
+        if (words.isNotEmpty) {
+          words += 'and ';
+        }
+        
+        if (intPart < 20) {
+          words += units[intPart];
+        } else {
+          words += '${tens[intPart ~/ 10]} ${units[intPart % 10]}';
+        }
+      }
+    }
+    
+    if (decimalPart > 0) {
+      words += ' Rupees and ';
+      if (decimalPart < 20) {
+        words += '${units[decimalPart]} Paise';
+      } else {
+        words += '${tens[decimalPart ~/ 10]} ${units[decimalPart % 10]} Paise';
+      }
+    } else {
+      words += ' Rupees';
+    }
+    
+    return words.trim();
   }
 }
 

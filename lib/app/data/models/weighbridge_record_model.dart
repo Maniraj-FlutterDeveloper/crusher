@@ -101,7 +101,7 @@ class WeighbridgeRecordModel extends Equatable {
       remarks: json['remarks'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      gateEntry: json['gate_entry'] != null ? GateEntryModel.fromJson(json['gate_entry']) : null,
+      gateEntry: json['gate_entry'] != null ? GateEntryModel.fromJson(json['gate_entry'] as Map<String, dynamic>) : null,
     );
   }
   

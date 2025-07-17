@@ -18,9 +18,17 @@ class InvoiceModel extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
   
+  // Additional fields for display
+  final String? buyerName;
+  final String? buyerGstin;
+  final String? buyerAddress;
+  final double? cgstPercentage;
+  final double? sgstPercentage;
+  final double? igstPercentage;
+  
   // Related models
-  final GateEntryModel? gateEntry;
   final List<InvoiceItemModel>? items;
+  final GateEntryModel? gateEntry;
   
   const InvoiceModel({
     this.id,
@@ -38,8 +46,14 @@ class InvoiceModel extends Equatable {
     required this.operatorId,
     required this.createdAt,
     required this.updatedAt,
-    this.gateEntry,
+    this.buyerName,
+    this.buyerGstin,
+    this.buyerAddress,
+    this.cgstPercentage,
+    this.sgstPercentage,
+    this.igstPercentage,
     this.items,
+    this.gateEntry,
   });
   
   // Create a copy of this model with given fields replaced with new values
@@ -59,8 +73,14 @@ class InvoiceModel extends Equatable {
     int? operatorId,
     DateTime? createdAt,
     DateTime? updatedAt,
-    GateEntryModel? gateEntry,
+    String? buyerName,
+    String? buyerGstin,
+    String? buyerAddress,
+    double? cgstPercentage,
+    double? sgstPercentage,
+    double? igstPercentage,
     List<InvoiceItemModel>? items,
+    GateEntryModel? gateEntry,
   }) {
     return InvoiceModel(
       id: id ?? this.id,
@@ -78,8 +98,14 @@ class InvoiceModel extends Equatable {
       operatorId: operatorId ?? this.operatorId,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      gateEntry: gateEntry ?? this.gateEntry,
+      buyerName: buyerName ?? this.buyerName,
+      buyerGstin: buyerGstin ?? this.buyerGstin,
+      buyerAddress: buyerAddress ?? this.buyerAddress,
+      cgstPercentage: cgstPercentage ?? this.cgstPercentage,
+      sgstPercentage: sgstPercentage ?? this.sgstPercentage,
+      igstPercentage: igstPercentage ?? this.igstPercentage,
       items: items ?? this.items,
+      gateEntry: gateEntry ?? this.gateEntry,
     );
   }
   
@@ -101,8 +127,14 @@ class InvoiceModel extends Equatable {
       'operator_id': operatorId,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
-      'gate_entry': gateEntry?.toJson(),
+      'buyer_name': buyerName,
+      'buyer_gstin': buyerGstin,
+      'buyer_address': buyerAddress,
+      'cgst_percentage': cgstPercentage,
+      'sgst_percentage': sgstPercentage,
+      'igst_percentage': igstPercentage,
       'items': items?.map((item) => item.toJson()).toList(),
+      'gate_entry': gateEntry?.toJson(),
     };
   }
   
@@ -124,10 +156,16 @@ class InvoiceModel extends Equatable {
       operatorId: json['operator_id'] as int,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
-      gateEntry: json['gate_entry'] != null ? GateEntryModel.fromJson(json['gate_entry']) : null,
+      buyerName: json['buyer_name'] as String?,
+      buyerGstin: json['buyer_gstin'] as String?,
+      buyerAddress: json['buyer_address'] as String?,
+      cgstPercentage: json['cgst_percentage'] != null ? json['cgst_percentage'] as double : null,
+      sgstPercentage: json['sgst_percentage'] != null ? json['sgst_percentage'] as double : null,
+      igstPercentage: json['igst_percentage'] != null ? json['igst_percentage'] as double : null,
       items: json['items'] != null
           ? (json['items'] as List).map((itemJson) => InvoiceItemModel.fromJson(itemJson)).toList()
           : null,
+      gateEntry: json['gate_entry'] != null ? GateEntryModel.fromJson(json['gate_entry'] as Map<String, dynamic>) : null,
     );
   }
   
@@ -190,19 +228,25 @@ class InvoiceModel extends Equatable {
     operatorId,
     createdAt,
     updatedAt,
-    gateEntry,
+    buyerName,
+    buyerGstin,
+    buyerAddress,
+    cgstPercentage,
+    sgstPercentage,
+    igstPercentage,
     items,
+    gateEntry,
   ];
   
   @override
   String toString() {
-    return 'InvoiceModel(id: $id, invoiceNumber: $invoiceNumber, totalAmount: $totalAmount, status: $status)';
+    return 'InvoiceModel(id: $id, invoiceNumber: $invoiceNumber, buyerId: $buyerId, totalAmount: $totalAmount)';
   }
 }
 
 class InvoiceItemModel extends Equatable {
   final int? id;
-  final int invoiceId;
+  final int? invoiceId;
   final int materialId;
   final int? stoneSizeId;
   final double quantity;
@@ -212,9 +256,15 @@ class InvoiceItemModel extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
   
+  // Additional fields for display
+  final String? materialName;
+  final String? stoneSizeName;
+  final String? weightUnitSymbol;
+  final String? hsnCode;
+  
   const InvoiceItemModel({
     this.id,
-    required this.invoiceId,
+    this.invoiceId,
     required this.materialId,
     this.stoneSizeId,
     required this.quantity,
@@ -223,6 +273,10 @@ class InvoiceItemModel extends Equatable {
     required this.amount,
     required this.createdAt,
     required this.updatedAt,
+    this.materialName,
+    this.stoneSizeName,
+    this.weightUnitSymbol,
+    this.hsnCode,
   });
   
   // Create a copy of this model with given fields replaced with new values
@@ -237,6 +291,10 @@ class InvoiceItemModel extends Equatable {
     double? amount,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? materialName,
+    String? stoneSizeName,
+    String? weightUnitSymbol,
+    String? hsnCode,
   }) {
     return InvoiceItemModel(
       id: id ?? this.id,
@@ -249,6 +307,10 @@ class InvoiceItemModel extends Equatable {
       amount: amount ?? this.amount,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      materialName: materialName ?? this.materialName,
+      stoneSizeName: stoneSizeName ?? this.stoneSizeName,
+      weightUnitSymbol: weightUnitSymbol ?? this.weightUnitSymbol,
+      hsnCode: hsnCode ?? this.hsnCode,
     );
   }
   
@@ -265,6 +327,10 @@ class InvoiceItemModel extends Equatable {
       'amount': amount,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'material_name': materialName,
+      'stone_size_name': stoneSizeName,
+      'weight_unit_symbol': weightUnitSymbol,
+      'hsn_code': hsnCode,
     };
   }
   
@@ -272,7 +338,7 @@ class InvoiceItemModel extends Equatable {
   factory InvoiceItemModel.fromJson(Map<String, dynamic> json) {
     return InvoiceItemModel(
       id: json['id'] as int?,
-      invoiceId: json['invoice_id'] as int,
+      invoiceId: json['invoice_id'] as int?,
       materialId: json['material_id'] as int,
       stoneSizeId: json['stone_size_id'] as int?,
       quantity: json['quantity'] as double,
@@ -281,6 +347,10 @@ class InvoiceItemModel extends Equatable {
       amount: json['amount'] as double,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      materialName: json['material_name'] as String?,
+      stoneSizeName: json['stone_size_name'] as String?,
+      weightUnitSymbol: json['weight_unit_symbol'] as String?,
+      hsnCode: json['hsn_code'] as String?,
     );
   }
   
@@ -288,7 +358,7 @@ class InvoiceItemModel extends Equatable {
   Map<String, dynamic> toMap() {
     return {
       if (id != null) 'id': id,
-      'invoice_id': invoiceId,
+      if (invoiceId != null) 'invoice_id': invoiceId,
       'material_id': materialId,
       'stone_size_id': stoneSizeId,
       'quantity': quantity,
@@ -304,7 +374,7 @@ class InvoiceItemModel extends Equatable {
   factory InvoiceItemModel.fromMap(Map<String, dynamic> map) {
     return InvoiceItemModel(
       id: map['id'] as int?,
-      invoiceId: map['invoice_id'] as int,
+      invoiceId: map['invoice_id'] as int?,
       materialId: map['material_id'] as int,
       stoneSizeId: map['stone_size_id'] as int?,
       quantity: map['quantity'] as double,
@@ -328,6 +398,10 @@ class InvoiceItemModel extends Equatable {
     amount,
     createdAt,
     updatedAt,
+    materialName,
+    stoneSizeName,
+    weightUnitSymbol,
+    hsnCode,
   ];
   
   @override
