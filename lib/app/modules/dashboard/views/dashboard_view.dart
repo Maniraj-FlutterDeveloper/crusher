@@ -5,6 +5,7 @@ import '../controllers/dashboard_controller.dart';
 import '../../../core/values/app_colors.dart';
 import '../../../core/utils/responsive_builder.dart';
 import '../../../global_widgets/responsive_layout.dart';
+import '../../../routes/app_routes.dart';
 
 class DashboardView extends GetView<DashboardController> {
   const DashboardView({Key? key}) : super(key: key);
@@ -316,6 +317,16 @@ class DashboardView extends GetView<DashboardController> {
                 // Navigate to reports
               },
             ),
+            SizedBox(height: 12),
+            _buildQuickActionButton(
+              context,
+              title: 'Data Synchronization',
+              icon: Icons.sync,
+              color: Colors.purple,
+              onPressed: () {
+                Get.toNamed(Routes.SYNC);
+              },
+            ),
           ],
         ),
       ),
@@ -347,4 +358,3 @@ class DashboardView extends GetView<DashboardController> {
     );
   }
 }
-

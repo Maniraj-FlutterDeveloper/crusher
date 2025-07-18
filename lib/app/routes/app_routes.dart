@@ -9,6 +9,7 @@ abstract class Routes {
   static const BILLING = '/billing';
   static const REPORTS = '/reports';
   static const SECURITY = '/security';
+  static const SYNC = '/sync';
   
   // Master configuration routes
   static const MATERIAL_MASTER = '/material-master';

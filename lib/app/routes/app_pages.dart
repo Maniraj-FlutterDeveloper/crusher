@@ -17,6 +17,8 @@ import '../modules/reports/bindings/reports_binding.dart';
 import '../modules/reports/views/reports_view.dart';
 import '../modules/security/bindings/security_binding.dart';
 import '../modules/security/views/security_view.dart';
+import '../modules/sync/bindings/sync_binding.dart';
+import '../modules/sync/views/sync_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -89,6 +91,11 @@ class AppPages {
       name: Routes.SECURITY,
       page: () => const SecurityView(),
       binding: SecurityBinding(),
+    ),
+    GetPage(
+      name: Routes.SYNC,
+      page: () => const SyncView(),
+      binding: SyncBinding(),
     ),
     // Add more routes here as they are implemented
   ];
