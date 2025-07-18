@@ -13,6 +13,8 @@ import '../modules/weighbridge/bindings/weighbridge_binding.dart';
 import '../modules/weighbridge/views/weighbridge_view.dart';
 import '../modules/material_loading/bindings/material_loading_binding.dart';
 import '../modules/material_loading/views/material_loading_view.dart';
+import '../modules/billing/bindings/billing_binding.dart';
+import '../modules/billing/views/billing_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -56,6 +58,11 @@ class AppPages {
       name: Routes.MATERIAL_LOADING,
       page: () => const MaterialLoadingView(),
       binding: MaterialLoadingBinding(),
+    ),
+    GetPage(
+      name: Routes.BILLING,
+      page: () => const BillingView(),
+      binding: BillingBinding(),
     ),
     // Add more routes here as they are implemented
   ];

@@ -84,8 +84,10 @@ This document tracks the implementation progress of the Crusher Management Syste
 |---------|--------|---------|
 | ✅ Invoice Model | Completed | Created model for invoices and invoice items |
 | ✅ Invoice Repository | Completed | Implemented repository for invoice operations |
-| ❌ Auto-Billing UI | Pending | Screen for automatic billing based on material and weight |
-| ❌ Tax Calculation | Pending | Implementation of GST calculation |
+| ✅ Buyer Model | Completed | Created model for buyers with all required fields |
+| ✅ Tax Calculation | Completed | Implementation of GST calculation logic |
+| ✅ Invoice Generation | Completed | Logic for generating invoices from gate entries and material loading |
+| ❌ Auto-Billing UI | In Progress | Screen for automatic billing based on material and weight |
 | ❌ Invoice Format UI | Pending | Screen for configuring invoice format |
 | ❌ Invoice List UI | Pending | Screen for viewing all invoices |
 | ✅ Invoice PDF Generation | Completed | PDF generation for invoices |
@@ -133,16 +135,16 @@ This document tracks the implementation progress of the Crusher Management Syste
 - **Gate Entry Module**: 100% Complete
 - **Weighbridge Module**: 100% Complete
 - **Material Loading Module**: 100% Complete
-- **Billing Module**: 40% Complete
+- **Billing Module**: 70% Complete
 - **Reports & Dashboard Module**: 30% Complete
 - **Security & Audit Module**: 25% Complete
 - **UI Components**: 80% Complete
 
-**Total Project Completion: Approximately 65%**
+**Total Project Completion: Approximately 75%**
 
 ## Next Steps
 
-1. Implement Billing Module
+1. Complete Billing Module UI
 2. Implement Reports Module
 3. Implement Security & Audit Module
 4. Implement Export Functionality
