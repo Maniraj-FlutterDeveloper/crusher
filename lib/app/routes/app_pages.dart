@@ -9,6 +9,8 @@ import '../modules/vehicle_master/bindings/vehicle_master_binding.dart';
 import '../modules/vehicle_master/views/vehicle_master_view.dart';
 import '../modules/gate_entry/bindings/gate_entry_binding.dart';
 import '../modules/gate_entry/views/gate_entry_view.dart';
+import '../modules/weighbridge/bindings/weighbridge_binding.dart';
+import '../modules/weighbridge/views/weighbridge_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -42,6 +44,11 @@ class AppPages {
       name: Routes.GATE_ENTRY,
       page: () => const GateEntryView(),
       binding: GateEntryBinding(),
+    ),
+    GetPage(
+      name: Routes.WEIGHBRIDGE,
+      page: () => const WeighbridgeView(),
+      binding: WeighbridgeBinding(),
     ),
     // Add more routes here as they are implemented
   ];

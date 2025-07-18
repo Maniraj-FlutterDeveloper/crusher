@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'gate_entry_model.dart';
+import 'user_model.dart';
 
 class WeighbridgeRecordModel extends Equatable {
   final int? id;
@@ -17,6 +18,8 @@ class WeighbridgeRecordModel extends Equatable {
   
   // Related models
   final GateEntryModel? gateEntry;
+  final UserModel? operator;
+  final WeightUnitModel? weightUnit;
   
   const WeighbridgeRecordModel({
     this.id,
@@ -32,6 +35,8 @@ class WeighbridgeRecordModel extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.gateEntry,
+    this.operator,
+    this.weightUnit,
   });
   
   // Create a copy of this model with given fields replaced with new values
@@ -49,6 +54,8 @@ class WeighbridgeRecordModel extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     GateEntryModel? gateEntry,
+    UserModel? operator,
+    WeightUnitModel? weightUnit,
   }) {
     return WeighbridgeRecordModel(
       id: id ?? this.id,
@@ -64,6 +71,8 @@ class WeighbridgeRecordModel extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       gateEntry: gateEntry ?? this.gateEntry,
+      operator: operator ?? this.operator,
+      weightUnit: weightUnit ?? this.weightUnit,
     );
   }
   
@@ -83,6 +92,8 @@ class WeighbridgeRecordModel extends Equatable {
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'gate_entry': gateEntry?.toJson(),
+      'operator': operator?.toJson(),
+      'weight_unit': weightUnit?.toJson(),
     };
   }
   
@@ -102,6 +113,8 @@ class WeighbridgeRecordModel extends Equatable {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       gateEntry: json['gate_entry'] != null ? GateEntryModel.fromJson(json['gate_entry'] as Map<String, dynamic>) : null,
+      operator: json['operator'] != null ? UserModel.fromJson(json['operator'] as Map<String, dynamic>) : null,
+      weightUnit: json['weight_unit'] != null ? WeightUnitModel.fromJson(json['weight_unit'] as Map<String, dynamic>) : null,
     );
   }
   
@@ -156,11 +169,122 @@ class WeighbridgeRecordModel extends Equatable {
     createdAt,
     updatedAt,
     gateEntry,
+    operator,
+    weightUnit,
   ];
   
   @override
   String toString() {
-    return 'WeighbridgeRecordModel(id: $id, gateEntryId: $gateEntryId, tareWeight: $tareWeight, grossWeight: $grossWeight, netWeight: $netWeight)';
+    return 'WeighbridgeRecordModel(id: $id, gateEntryId: $gateEntryId, netWeight: $netWeight)';
+  }
+}
+
+class WeightUnitModel extends Equatable {
+  final int? id;
+  final String name;
+  final String symbol;
+  final double conversionFactor;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  
+  const WeightUnitModel({
+    this.id,
+    required this.name,
+    required this.symbol,
+    required this.conversionFactor,
+    required this.isActive,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  
+  // Create a copy of this model with given fields replaced with new values
+  WeightUnitModel copyWith({
+    int? id,
+    String? name,
+    String? symbol,
+    double? conversionFactor,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return WeightUnitModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      symbol: symbol ?? this.symbol,
+      conversionFactor: conversionFactor ?? this.conversionFactor,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+  
+  // Convert model to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'symbol': symbol,
+      'conversion_factor': conversionFactor,
+      'is_active': isActive,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+  
+  // Create model from JSON
+  factory WeightUnitModel.fromJson(Map<String, dynamic> json) {
+    return WeightUnitModel(
+      id: json['id'] as int?,
+      name: json['name'] as String,
+      symbol: json['symbol'] as String,
+      conversionFactor: json['conversion_factor'] as double,
+      isActive: json['is_active'] as bool,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+  
+  // Convert model to map for database operations
+  Map<String, dynamic> toMap() {
+    return {
+      if (id != null) 'id': id,
+      'name': name,
+      'symbol': symbol,
+      'conversion_factor': conversionFactor,
+      'is_active': isActive ? 1 : 0,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+  
+  // Create model from database map
+  factory WeightUnitModel.fromMap(Map<String, dynamic> map) {
+    return WeightUnitModel(
+      id: map['id'] as int?,
+      name: map['name'] as String,
+      symbol: map['symbol'] as String,
+      conversionFactor: map['conversion_factor'] as double,
+      isActive: map['is_active'] == 1,
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: DateTime.parse(map['updated_at'] as String),
+    );
+  }
+  
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    symbol,
+    conversionFactor,
+    isActive,
+    createdAt,
+    updatedAt,
+  ];
+  
+  @override
+  String toString() {
+    return 'WeightUnitModel(id: $id, name: $name, symbol: $symbol)';
   }
 }
 

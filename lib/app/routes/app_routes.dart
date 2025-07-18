@@ -5,6 +5,7 @@ abstract class Routes {
   static const DASHBOARD = '/dashboard';
   static const VEHICLE_MASTER = '/vehicle-master';
   static const GATE_ENTRY = '/gate-entry';
+  static const WEIGHBRIDGE = '/weighbridge';
   
   // Master configuration routes
   static const MATERIAL_MASTER = '/material-master';

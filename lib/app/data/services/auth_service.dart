@@ -1,71 +1,72 @@
 import 'package:get/get.dart';
 import '../models/user_model.dart';
-import '../providers/db_provider.dart';
+import '../repositories/user_repository.dart';
 import 'storage_service.dart';
 import '../../core/values/app_constants.dart';
 
 class AuthService extends GetxService {
   static AuthService get to => Get.find<AuthService>();
   
-  final DbProvider _dbProvider = Get.find<DbProvider>();
   final StorageService _storageService = Get.find<StorageService>();
+  late final UserRepository _userRepository;
   
-  final Rx<UserModel?> _currentUser = Rx<UserModel?>(null);
-  final RxBool _isLoggedIn = false.obs;
-  
-  // Get current user
-  UserModel? get currentUser => _currentUser.value;
-  
-  // Check if user is logged in
-  bool get isLoggedIn => _isLoggedIn.value;
+  // Observables
+  final Rx<UserModel?> currentUser = Rx<UserModel?>(null);
+  final RxBool isLoggedIn = false.obs;
   
   // Initialize auth service
   Future<AuthService> init() async {
+    _userRepository = Get.find<UserRepository>();
+    
     // Check if user is logged in
-    final String? userJson = _storageService.getString(AppConstants.storageUserKey);
-    if (userJson != null) {
+    await checkAuth();
+    
+    print('Auth service initialized');
+    return this;
+  }
+  
+  // Check if user is authenticated
+  Future<bool> checkAuth() async {
+    final userData = _storageService.getObject(AppConstants.storageUserKey);
+    
+    if (userData != null) {
       try {
-        final Map<String, dynamic> userMap = _storageService.getObject(AppConstants.storageUserKey)!;
-        _currentUser.value = UserModel.fromJson(userMap);
-        _isLoggedIn.value = true;
-        print('User logged in: ${_currentUser.value!.username}');
+        final user = UserModel.fromJson(userData);
+        currentUser.value = user;
+        isLoggedIn.value = true;
+        return true;
       } catch (e) {
         print('Error parsing user data: $e');
         await logout();
       }
     }
     
-    print('Auth service initialized');
-    return this;
+    return false;
   }
   
   // Login
   Future<bool> login(String username, String password) async {
     try {
-      final Map<String, dynamic>? userMap = await _dbProvider.getUserByUsername(username);
-      if (userMap != null && userMap['password'] == password) {
-        // Get user with roles and permissions
-        final Map<String, dynamic>? userWithRoles = await _dbProvider.getUserWithRolesAndPermissions(userMap['id']);
+      final user = await _userRepository.getUserByCredentials(username, password);
+      
+      if (user != null) {
+        // Get user roles and permissions
+        final userWithRoles = await _userRepository.getUserWithRolesAndPermissions(user.id!);
+        
         if (userWithRoles != null) {
-          // Create user model
-          final UserModel user = UserModel.fromJson(userWithRoles);
-          
           // Update last login
-          await _dbProvider.update(
-            'user',
-            {
-              'last_login': DateTime.now().toIso8601String(),
-              'updated_at': DateTime.now().toIso8601String(),
-            },
-            user.id!,
+          final updatedUser = userWithRoles.copyWith(
+            lastLogin: DateTime.now(),
           );
           
-          // Save user to storage
-          await _storageService.setObject(AppConstants.storageUserKey, user.toJson());
+          await _userRepository.updateUser(updatedUser);
           
-          // Set current user
-          _currentUser.value = user;
-          _isLoggedIn.value = true;
+          // Save user to storage
+          await _storageService.setObject(AppConstants.storageUserKey, updatedUser.toJson());
+          
+          // Update current user
+          currentUser.value = updatedUser;
+          isLoggedIn.value = true;
           
           return true;
         }
@@ -80,25 +81,69 @@ class AuthService extends GetxService {
   
   // Logout
   Future<void> logout() async {
-    try {
-      await _storageService.remove(AppConstants.storageUserKey);
-      _currentUser.value = null;
-      _isLoggedIn.value = false;
-    } catch (e) {
-      print('Error logging out: $e');
-    }
+    await _storageService.remove(AppConstants.storageUserKey);
+    currentUser.value = null;
+    isLoggedIn.value = false;
   }
   
-  // Check if user has permission
-  bool hasPermission(String permission) {
-    if (_currentUser.value == null || _currentUser.value!.roles == null) {
+  // Get current user
+  Future<UserModel?> getCurrentUser() async {
+    if (currentUser.value != null) {
+      return currentUser.value;
+    }
+    
+    await checkAuth();
+    return currentUser.value;
+  }
+  
+  // Check if user has role
+  bool hasRole(String roleName) {
+    if (currentUser.value == null || currentUser.value!.roles == null) {
       return false;
     }
     
-    for (var role in _currentUser.value!.roles!) {
-      if (role.permissions != null) {
-        for (var perm in role.permissions!) {
-          if (perm.name == permission) {
+    return currentUser.value!.roles!.any((role) => role.name == roleName && role.isActive);
+  }
+  
+  // Check if user has permission
+  bool hasPermission(String permissionName) {
+    if (currentUser.value == null || currentUser.value!.roles == null) {
+      return false;
+    }
+    
+    // Admin role has all permissions
+    if (hasRole(AppConstants.roleAdmin)) {
+      return true;
+    }
+    
+    // Check if any role has the permission
+    for (final role in currentUser.value!.roles!) {
+      if (role.isActive && role.permissions != null) {
+        if (role.permissions!.any((permission) => permission.name == permissionName)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+  
+  // Check if user has any of the permissions
+  bool hasAnyPermission(List<String> permissionNames) {
+    if (currentUser.value == null || currentUser.value!.roles == null) {
+      return false;
+    }
+    
+    // Admin role has all permissions
+    if (hasRole(AppConstants.roleAdmin)) {
+      return true;
+    }
+    
+    // Check if any role has any of the permissions
+    for (final role in currentUser.value!.roles!) {
+      if (role.isActive && role.permissions != null) {
+        for (final permissionName in permissionNames) {
+          if (role.permissions!.any((permission) => permission.name == permissionName)) {
             return true;
           }
         }
@@ -108,31 +153,25 @@ class AuthService extends GetxService {
     return false;
   }
   
-  // Check if user has role
-  bool hasRole(String role) {
-    if (_currentUser.value == null || _currentUser.value!.roles == null) {
+  // Check if user has all of the permissions
+  bool hasAllPermissions(List<String> permissionNames) {
+    if (currentUser.value == null || currentUser.value!.roles == null) {
       return false;
     }
     
-    for (var r in _currentUser.value!.roles!) {
-      if (r.name == role) {
-        return true;
+    // Admin role has all permissions
+    if (hasRole(AppConstants.roleAdmin)) {
+      return true;
+    }
+    
+    // Check if user has all of the permissions
+    for (final permissionName in permissionNames) {
+      if (!hasPermission(permissionName)) {
+        return false;
       }
     }
     
-    return false;
+    return true;
   }
-  
-  // Check if user is admin
-  bool get isAdmin => hasRole(AppConstants.roleAdmin);
-  
-  // Check if user is supervisor
-  bool get isSupervisor => hasRole(AppConstants.roleSupervisor);
-  
-  // Check if user is billing operator
-  bool get isBillingOperator => hasRole(AppConstants.roleBilling);
-  
-  // Check if user is operator
-  bool get isOperator => hasRole(AppConstants.roleOperator);
 }
 
