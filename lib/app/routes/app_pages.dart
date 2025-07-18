@@ -63,6 +63,20 @@ class AppPages {
       name: Routes.BILLING,
       page: () => const BillingView(),
       binding: BillingBinding(),
+      children: [
+        GetPage(
+          name: '/create',
+          page: () => const BillingView(),
+        ),
+        GetPage(
+          name: '/edit/:id',
+          page: () => const BillingView(),
+        ),
+        GetPage(
+          name: '/view/:id',
+          page: () => const BillingView(),
+        ),
+      ],
     ),
     // Add more routes here as they are implemented
   ];
