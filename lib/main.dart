@@ -10,6 +10,10 @@ import 'app/data/services/auth_service.dart';
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/core/values/app_constants.dart';
+import 'app/core/error/global_error_handler.dart';
+import 'app/core/error/error_handler.dart';
+import 'app/core/services/logger_service.dart';
+import 'app/data/repositories/audit_log_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +28,21 @@ void main() async {
   // Initialize services
   await initServices();
   
+  // Initialize error handling
+  final globalErrorHandler = initErrorHandling();
+  globalErrorHandler.initialize();
+  
   runApp(const MyApp());
 }
 
 // Initialize services
 Future<void> initServices() async {
   print('Initializing services...');
+  
+  // Initialize logger service
+  final logger = LoggerService();
+  await logger.init();
+  Get.put(logger, permanent: true);
   
   // Initialize storage service
   await Get.putAsync(() => StorageService().init());
@@ -40,7 +53,31 @@ Future<void> initServices() async {
   // Initialize auth service
   await Get.putAsync(() => AuthService().init());
   
+  // Initialize repositories
+  Get.put(AuditLogRepository(), permanent: true);
+  
   print('All services initialized');
+}
+
+// Initialize error handling
+GlobalErrorHandler initErrorHandling() {
+  // Get logger
+  final logger = Get.find<LoggerService>();
+
+  // Create error handler
+  final errorHandler = ErrorHandler(
+    logger: logger,
+    auditLogRepository: Get.find<AuditLogRepository>(),
+  );
+  Get.put(errorHandler, permanent: true);
+
+  // Create global error handler
+  final globalErrorHandler = GlobalErrorHandler(
+    logger: logger,
+    errorHandler: errorHandler,
+  );
+
+  return globalErrorHandler;
 }
 
 class MyApp extends StatelessWidget {
@@ -61,4 +98,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
