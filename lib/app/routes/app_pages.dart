@@ -1,12 +1,10 @@
 import 'package:get/get.dart';
-import '../modules/auth/bindings/auth_binding.dart';
-import '../modules/auth/views/login_view.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
+import '../modules/login/bindings/login_binding.dart';
+import '../modules/login/views/login_view.dart';
 import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
-import '../modules/vehicle_master/bindings/vehicle_master_binding.dart';
-import '../modules/vehicle_master/views/vehicle_master_view.dart';
 import '../modules/gate_entry/bindings/gate_entry_binding.dart';
 import '../modules/gate_entry/views/gate_entry_view.dart';
 import '../modules/weighbridge/bindings/weighbridge_binding.dart';
@@ -15,6 +13,8 @@ import '../modules/material_loading/bindings/material_loading_binding.dart';
 import '../modules/material_loading/views/material_loading_view.dart';
 import '../modules/billing/bindings/billing_binding.dart';
 import '../modules/billing/views/billing_view.dart';
+import '../modules/reports/bindings/reports_binding.dart';
+import '../modules/reports/views/reports_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -77,6 +77,11 @@ class AppPages {
           page: () => const BillingView(),
         ),
       ],
+    ),
+    GetPage(
+      name: Routes.REPORTS,
+      page: () => const ReportsView(),
+      binding: ReportsBinding(),
     ),
     // Add more routes here as they are implemented
   ];
