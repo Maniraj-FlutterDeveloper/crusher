@@ -35,6 +35,16 @@ class AppConstants {
   static const String roleBilling = 'BILLING';
   static const String roleOperator = 'OPERATOR';
   
+  // Material loading status
+  static const String statusPending = 'PENDING';
+  static const String statusLoading = 'LOADING';
+  static const String statusLoaded = 'LOADED';
+  static const String statusCancelled = 'CANCELLED';
+  
+  // Material loading purpose
+  static const String purposeSale = 'SALE';
+  static const String purposeInternal = 'INTERNAL';
+  
   // Pagination
   static const int defaultPageSize = 10;
   static const List<int> availablePageSizes = [10, 20, 50, 100];
@@ -61,4 +71,3 @@ class AppConstants {
   static const double defaultBorderRadius = 8.0;
   static const double defaultElevation = 2.0;
 }
-
