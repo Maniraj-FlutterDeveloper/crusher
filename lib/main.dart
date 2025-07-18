@@ -11,7 +11,7 @@ import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/core/values/app_constants.dart';
 import 'app/core/error/global_error_handler.dart';
-import 'app/core/error/error_handler.dart';
+import 'app/core/error/errorhandler.dart';
 import 'app/core/services/logger_service.dart';
 import 'app/data/repositories/audit_log_repository.dart';
 
