@@ -3,11 +3,12 @@ abstract class Routes {
   static const HOME = '/home';
   static const LOGIN = '/login';
   static const DASHBOARD = '/dashboard';
-  static const VEHICLE_MASTER = '/vehicle-master';
   static const GATE_ENTRY = '/gate-entry';
   static const WEIGHBRIDGE = '/weighbridge';
   static const MATERIAL_LOADING = '/material-loading';
   static const BILLING = '/billing';
+  static const REPORTS = '/reports';
+  static const SECURITY = '/security';
   
   // Master configuration routes
   static const MATERIAL_MASTER = '/material-master';

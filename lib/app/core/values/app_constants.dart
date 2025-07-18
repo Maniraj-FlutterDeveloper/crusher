@@ -29,11 +29,11 @@ class AppConstants {
   static const String invoiceStatusFinal = 'FINAL';
   static const String invoiceStatusCancelled = 'CANCELLED';
   
-  // User roles
-  static const String roleAdmin = 'ADMIN';
-  static const String roleSupervisor = 'SUPERVISOR';
-  static const String roleBilling = 'BILLING';
-  static const String roleOperator = 'OPERATOR';
+  // Role constants
+  static const String roleAdmin = 'Administrator';
+  static const String roleSupervisor = 'Supervisor';
+  static const String roleOperator = 'Operator';
+  static const String roleBilling = 'Billing';
   
   // Material loading status
   static const String statusPending = 'PENDING';

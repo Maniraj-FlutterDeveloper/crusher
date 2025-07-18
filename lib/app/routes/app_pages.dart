@@ -15,6 +15,8 @@ import '../modules/billing/bindings/billing_binding.dart';
 import '../modules/billing/views/billing_view.dart';
 import '../modules/reports/bindings/reports_binding.dart';
 import '../modules/reports/views/reports_view.dart';
+import '../modules/security/bindings/security_binding.dart';
+import '../modules/security/views/security_view.dart';
 import 'app_routes.dart';
 
 class AppPages {
@@ -82,6 +84,11 @@ class AppPages {
       name: Routes.REPORTS,
       page: () => const ReportsView(),
       binding: ReportsBinding(),
+    ),
+    GetPage(
+      name: Routes.SECURITY,
+      page: () => const SecurityView(),
+      binding: SecurityBinding(),
     ),
     // Add more routes here as they are implemented
   ];
