@@ -1,3 +1,5 @@
+import 'package:crusher_management/app/data/models/material_size_model.dart';
+import 'package:crusher_management/app/data/models/weighbridge_record_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../../data/models/invoice_model.dart';

@@ -41,6 +41,9 @@ dependencies:
   connectivity_plus: ^4.0.1
   http: ^1.0.0
   
+  # Excel
+  excel: ^2.1.0
+  
   # Window management (for desktop)
   window_size:
     git:

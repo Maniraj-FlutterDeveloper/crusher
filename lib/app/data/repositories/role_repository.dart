@@ -1,7 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/role_model.dart';
 import '../models/permission_model.dart';
-import '../services/database_service.dart';
 import 'permission_repository.dart';
 import '../../core/values/app_constants.dart';
 import 'package:get/get.dart';

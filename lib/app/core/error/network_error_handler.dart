@@ -175,7 +175,7 @@ class NetworkErrorHandler {
     } on TimeoutException catch (e) {
       final error = NetworkError.timeout(
         message: errorMessage ?? 'Request timed out',
-        stackTrace: e.stackTrace,
+        stackTrace: StackTrace.current,
       );
       throw await _errorHandler.handleError(error);
     } on SocketException catch (e) {

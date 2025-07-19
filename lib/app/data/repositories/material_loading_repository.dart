@@ -1,3 +1,8 @@
+import 'package:crusher_management/app/data/models/gate_entry_model.dart';
+import 'package:crusher_management/app/data/models/material_size_model.dart';
+import 'package:crusher_management/app/data/models/material_type_model.dart';
+import 'package:crusher_management/app/data/models/user_model.dart';
+import 'package:crusher_management/app/data/models/weighbridge_record_model.dart';
 import 'package:get/get.dart';
 import '../models/material_loading_model.dart';
 import '../models/material_model.dart';
@@ -103,11 +108,11 @@ class MaterialLoadingRepository {
         };
         
         return materialLoading.copyWith(
-          gateEntry: gateEntry != null ? GateEntryModel.fromMap(gateEntry) : null,
-          material: material != null ? MaterialModel.fromMap(material) : null,
+          gateEntry: GateEntryModel.fromMap(gateEntry),
+          material: MaterialModel.fromMap(material),
           materialSize: materialSize != null ? MaterialSizeModel.fromMap(materialSize) : null,
-          weightUnit: weightUnit != null ? WeightUnitModel.fromMap(weightUnit) : null,
-          operator: operator != null ? UserModel.fromMap(operator) : null,
+          weightUnit: WeightUnitModel.fromMap(weightUnit),
+          operator: UserModel.fromMap(operator),
         );
       }
       

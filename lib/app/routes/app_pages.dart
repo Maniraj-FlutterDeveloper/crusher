@@ -1,8 +1,10 @@
+import 'package:crusher_management/app/modules/auth/bindings/auth_binding.dart';
+import 'package:crusher_management/app/modules/auth/views/login_view.dart';
+import 'package:crusher_management/app/modules/vehicle_master/bindings/vehicle_master_binding.dart';
+import 'package:crusher_management/app/modules/vehicle_master/views/vehicle_master_view.dart';
 import 'package:get/get.dart';
 import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
-import '../modules/login/bindings/login_binding.dart';
-import '../modules/login/views/login_view.dart';
 import '../modules/dashboard/bindings/dashboard_binding.dart';
 import '../modules/dashboard/views/dashboard_view.dart';
 import '../modules/gate_entry/bindings/gate_entry_binding.dart';

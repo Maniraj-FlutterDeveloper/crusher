@@ -1,3 +1,5 @@
+import 'package:crusher_management/app/data/models/gate_entry_model.dart';
+import 'package:crusher_management/app/data/models/user_model.dart';
 import 'package:get/get.dart';
 import '../models/weighbridge_record_model.dart';
 import '../providers/db_provider.dart';
@@ -77,9 +79,9 @@ class WeighbridgeRepository {
         };
         
         return weighbridgeRecord.copyWith(
-          gateEntry: gateEntry != null ? GateEntryModel.fromMap(gateEntry) : null,
-          weightUnit: weightUnit != null ? WeightUnitModel.fromMap(weightUnit) : null,
-          operator: operator != null ? UserModel.fromMap(operator) : null,
+          gateEntry: GateEntryModel.fromMap(gateEntry),
+          weightUnit: WeightUnitModel.fromMap(weightUnit),
+          operator: UserModel.fromMap(operator),
         );
       }
       
@@ -174,7 +176,7 @@ class WeighbridgeRepository {
   }
   
   // Convert weight between units
-  double convertWeight(double weight, int fromUnitId, int toUnitId) async {
+  Future<double> convertWeight(double weight, int fromUnitId, int toUnitId) async {
     final WeightUnitModel? fromUnit = await getWeightUnitById(fromUnitId);
     final WeightUnitModel? toUnit = await getWeightUnitById(toUnitId);
     

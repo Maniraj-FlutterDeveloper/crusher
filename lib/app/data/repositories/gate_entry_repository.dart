@@ -1,3 +1,4 @@
+import 'package:crusher_management/app/data/models/vehicle_model.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../models/gate_entry_model.dart';

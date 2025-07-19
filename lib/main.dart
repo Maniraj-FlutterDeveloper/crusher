@@ -1,8 +1,8 @@
+import 'package:crusher_management/app/core/error/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:window_size/window_size.dart';
 import 'dart:io';
-
 import 'app/core/theme/app_theme.dart';
 import 'app/data/services/db_service.dart';
 import 'app/data/services/storage_service.dart';
@@ -11,7 +11,6 @@ import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/core/values/app_constants.dart';
 import 'app/core/error/global_error_handler.dart';
-import 'app/core/error/errorhandler.dart';
 import 'app/core/services/logger_service.dart';
 import 'app/data/repositories/audit_log_repository.dart';
 

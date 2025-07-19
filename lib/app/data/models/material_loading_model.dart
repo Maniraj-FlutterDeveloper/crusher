@@ -1,3 +1,4 @@
+import 'package:crusher_management/app/data/models/material_size_model.dart';
 import 'package:equatable/equatable.dart';
 import 'gate_entry_model.dart';
 import 'material_model.dart';

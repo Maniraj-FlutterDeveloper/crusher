@@ -1,6 +1,5 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/permission_model.dart';
-import '../services/database_service.dart';
 import 'package:get/get.dart';
 
 class PermissionRepository {

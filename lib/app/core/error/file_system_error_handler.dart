@@ -24,13 +24,13 @@ class FileSystemErrorHandler {
     try {
       return await operation();
     } on FileSystemException catch (e) {
-      final error = _handleFileSystemException(
+      _handleFileSystemException(
         e,
         path: path ?? e.path,
         operationType: operationType,
         errorMessage: errorMessage,
       );
-      throw await _errorHandler.handleError(error);
+      rethrow;
     } catch (e, stackTrace) {
       // If it's already an AppError, just rethrow it
       if (e is AppError) {
@@ -46,7 +46,7 @@ class FileSystemErrorHandler {
         details: e,
         stackTrace: stackTrace,
       );
-      throw await _errorHandler.handleError(error);
+      rethrow;
     }
   }
 
@@ -65,14 +65,14 @@ class FileSystemErrorHandler {
         message.contains('cannot find the file') ||
         (osError != null && osError.errorCode == 2)) {
       return FileSystemError.notFound(
-        path: path ?? exception.path,
+        path: path ?? exception.path ?? '',
         stackTrace: StackTrace.current,
       );
     } else if (message.contains('permission denied') || 
                message.contains('access is denied') ||
                (osError != null && (osError.errorCode == 13 || osError.errorCode == 5))) {
       return FileSystemError.accessDenied(
-        path: path ?? exception.path,
+        path: path ?? exception.path ?? '',
         operation: operationType,
         stackTrace: StackTrace.current,
       );

@@ -1,12 +1,9 @@
 import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import '../models/audit_log_model.dart';
-import '../services/database_service.dart';
 import '../services/auth_service.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:io';
 
 class AuditLogRepository {
