@@ -24,7 +24,7 @@ dependencies:
   # UI
   cupertino_icons: ^1.0.5
   google_fonts: ^4.0.4
-  data_table_2: ^2.4.2
+  # data_table_2: ^2.5.10
   flutter_svg: ^2.0.5
   intl: ^0.18.1
   equatable: ^2.0.5
@@ -35,14 +35,14 @@ dependencies:
   
   # File handling
   path_provider: ^2.0.15
-  file_picker: ^5.3.1
+  # file_picker: ^5.3.1
   
   # Network
   connectivity_plus: ^4.0.1
   http: ^1.0.0
-  
-  # Excel
-  excel: ^2.1.0
+
+  device_info_plus: ^11.5.0
+  package_info_plus: ^8.3.0
   
   # Window management (for desktop)
   window_size:
@@ -50,6 +50,9 @@ dependencies:
       url: https://github.com/google/flutter-desktop-embedding.git
       path: plugins/window_size
       ref: 6c66ad23ee79749f30a8eece542cf54eaf157ed8
+  excel: ^4.0.6
+  file_picker: ^10.2.0
+  data_table_2: ^2.6.0
 
 dev_dependencies:
   flutter_test:

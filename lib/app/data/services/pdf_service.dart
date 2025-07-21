@@ -264,45 +264,43 @@ class PdfService extends GetxService {
         _buildDetailRow('Session ID', record.gateEntry?.sessionId ?? 'N/A', font: font, fontBold: fontBold),
         _buildDetailRow('Vehicle No', record.gateEntry?.vehicle?.vehicleNumber ?? 'N/A', font: font, fontBold: fontBold),
         _buildDetailRow('Driver Name', record.gateEntry?.driverName ?? 'N/A', font: font, fontBold: fontBold),
-        if (record.tareWeight != null) {
+        if (record.tareWeight != null)
           _buildDetailRow(
             'Tare Weight',
             '${record.tareWeight} ${record.weightUnit?.symbol ?? 'kg'}',
             font: font,
             fontBold: fontBold,
           ),
+        if (record.tareWeight != null && record.tareWeightTime != null)
           _buildDetailRow(
             'Tare Weight Time',
             record.tareWeightTime != null ? DateFormat(AppConstants.dateTimeFormat).format(record.tareWeightTime!) : 'N/A',
             font: font,
             fontBold: fontBold,
           ),
-        },
-        if (record.grossWeight != null) {
+        if (record.grossWeight != null)
           _buildDetailRow(
             'Gross Weight',
             '${record.grossWeight} ${record.weightUnit?.symbol ?? 'kg'}',
             font: font,
             fontBold: fontBold,
           ),
+        if (record.grossWeight != null && record.grossWeightTime != null)
           _buildDetailRow(
             'Gross Weight Time',
             record.grossWeightTime != null ? DateFormat(AppConstants.dateTimeFormat).format(record.grossWeightTime!) : 'N/A',
             font: font,
             fontBold: fontBold,
           ),
-        },
-        if (record.netWeight != null) {
+        if (record.netWeight != null)
           _buildDetailRow(
             'Net Weight',
             '${record.netWeight} ${record.weightUnit?.symbol ?? 'kg'}',
             font: font,
             fontBold: fontBold,
           ),
-        },
-        if (record.remarks != null && record.remarks!.isNotEmpty) {
+        if (record.remarks != null && record.remarks!.isNotEmpty)
           _buildDetailRow('Remarks', record.remarks!, font: font, fontBold: fontBold),
-        },
       ],
     );
   }
@@ -348,7 +346,7 @@ class PdfService extends GetxService {
           )).toList(),
         ),
         // Item rows
-        ...invoice.items.asMap().entries.map((entry) {
+        ...invoice.items!.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
           

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:data_table_2/data_table_2.dart';
-import '../core/values/app_colors.dart';
 
 class MasterDataTableHeader extends StatelessWidget {
   final String title;
@@ -49,6 +48,7 @@ class MasterDataTableActions extends StatelessWidget {
   final VoidCallback? onPrint;
   final VoidCallback? onDelete;
   final bool showDelete;
+  final bool isDeleteEnabled;
   
   const MasterDataTableActions({
     Key? key,
@@ -58,6 +58,7 @@ class MasterDataTableActions extends StatelessWidget {
     this.onPrint,
     this.onDelete,
     this.showDelete = true,
+    this.isDeleteEnabled = false,
   }) : super(key: key);
   
   @override
@@ -88,10 +89,10 @@ class MasterDataTableActions extends StatelessWidget {
             onPressed: onPrint,
             tooltip: 'Print',
           ),
-        if (showDelete && onDelete != null)
+        if (showDelete)
           IconButton(
             icon: const Icon(Icons.delete),
-            onPressed: onDelete,
+            onPressed: isDeleteEnabled ? onDelete : null,
             tooltip: 'Delete',
           ),
       ],
@@ -114,6 +115,7 @@ class MasterDataTable<T> extends StatelessWidget {
   final int currentPage;
   final int totalPages;
   final void Function(int)? onPageChanged;
+  final void Function(int, bool)? onSort;
   
   const MasterDataTable({
     Key? key,
@@ -131,6 +133,7 @@ class MasterDataTable<T> extends StatelessWidget {
     this.currentPage = 0,
     this.totalPages = 1,
     this.onPageChanged,
+    this.onSort,
   }) : super(key: key);
   
   @override
@@ -160,6 +163,7 @@ class MasterDataTable<T> extends StatelessWidget {
             showCheckboxColumn: showCheckboxColumn,
             sortAscending: sortAscending,
             sortColumnIndex: sortColumnIndex,
+            // onSort: onSort,
             empty: Center(
               child: Text(
                 emptyMessage,

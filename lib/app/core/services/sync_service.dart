@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../error/app_error.dart';
 import '../error/error_handler.dart';
 import 'logger_service.dart';
 import '../../data/models/sync_item_model.dart';
@@ -86,7 +85,7 @@ class SyncService extends GetxService {
     final wasOnline = isOnline.value;
     isOnline.value = result != ConnectivityResult.none;
 
-    _logger.info('Connectivity changed: $result, isOnline: ${isOnline.value}');
+    _logger.info('Connectivity changed: $result, isOnline: \${isOnline.value}');
 
     // If we just came online and auto sync is enabled, trigger a sync
     if (!wasOnline && isOnline.value && _autoSync) {
@@ -142,8 +141,8 @@ class SyncService extends GetxService {
 
       await _syncRepository.addSyncItem(syncItem);
       await _loadPendingSyncCount();
-      
-      _logger.info('Added item to sync queue: ${syncItem.entityType}/${syncItem.entityId}');
+
+      _logger.info('Added item to sync queue: \${syncItem.entityType}/\${syncItem.entityId}');
 
       // If we're online and auto sync is enabled, trigger a sync
       if (isOnline.value && _autoSync) {
@@ -178,7 +177,7 @@ class SyncService extends GetxService {
 
       // Get pending sync items
       final items = await _syncRepository.getPendingSyncItems();
-      
+
       if (items.isEmpty) {
         _logger.info('No pending sync items');
         currentSyncStatus.value = 'No pending items to sync';
@@ -186,8 +185,8 @@ class SyncService extends GetxService {
         return true;
       }
 
-      _logger.info('Found ${items.length} pending sync items');
-      currentSyncStatus.value = 'Syncing ${items.length} items...';
+      _logger.info('Found \${items.length} pending sync items');
+      currentSyncStatus.value = 'Syncing \${items.length} items...';
 
       // Sort items by priority (higher priority first)
       items.sort((a, b) => b.priority.compareTo(a.priority));
@@ -198,11 +197,11 @@ class SyncService extends GetxService {
 
       for (final item in items) {
         try {
-          currentSyncStatus.value = 'Syncing ${item.entityType}/${item.entityId}...';
-          
+          currentSyncStatus.value = 'Syncing \${item.entityType}/\${item.entityId}...';
+
           // Process the sync item based on entity type and action
           final success = await _processSyncItem(item);
-          
+
           if (success) {
             // Mark as synced
             await _syncRepository.markAsSynced(item.id!);
@@ -210,16 +209,16 @@ class SyncService extends GetxService {
           } else {
             // Increment attempt count
             await _syncRepository.incrementAttemptCount(item.id!);
-            
+
             // If max attempts reached, mark as failed
             if (item.attempts >= 5) {
               await _syncRepository.markAsFailed(item.id!);
             }
           }
         } catch (e) {
-          _logger.error('Error syncing item ${item.id}', e);
+          _logger.error('Error syncing item \${item.id}', e);
           await _syncRepository.incrementAttemptCount(item.id!);
-          
+
           // If max attempts reached, mark as failed
           if (item.attempts >= 5) {
             await _syncRepository.markAsFailed(item.id!);
@@ -233,14 +232,14 @@ class SyncService extends GetxService {
       // Update pending count
       await _loadPendingSyncCount();
 
-      currentSyncStatus.value = 'Sync completed: $successful/${items.length} items synced';
-      _logger.info('Sync completed: $successful/${items.length} items synced');
-      
+      currentSyncStatus.value = 'Sync completed: $successful/\${items.length} items synced';
+      _logger.info('Sync completed: $successful/\${items.length} items synced');
+
       return successful == items.length;
     } catch (e, stackTrace) {
       final error = await _errorHandler.handleError(e, stackTrace);
       _logger.error('Sync failed', error);
-      currentSyncStatus.value = 'Sync failed: ${error.message}';
+      currentSyncStatus.value = 'Sync failed: \${error.message}';
       return false;
     } finally {
       isSyncing.value = false;
@@ -249,7 +248,7 @@ class SyncService extends GetxService {
 
   /// Process a sync item based on entity type and action
   Future<bool> _processSyncItem(SyncItemModel item) async {
-    _logger.info('Processing sync item: ${item.entityType}/${item.action}');
+    _logger.info('Processing sync item: \${item.entityType}/\${item.action}');
 
     // Implement the sync logic for each entity type and action
     switch (item.entityType) {
@@ -270,7 +269,7 @@ class SyncService extends GetxService {
       case 'invoice':
         return await _syncInvoice(item);
       default:
-        _logger.warning('Unknown entity type: ${item.entityType}');
+        _logger.warning('Unknown entity type: \${item.entityType}');
         return false;
     }
   }
@@ -335,26 +334,25 @@ class SyncService extends GetxService {
   Future<String?> exportSyncData() async {
     try {
       _logger.info('Exporting sync data');
-      
+
       // Get all sync items
       final items = await _syncRepository.getAllSyncItems();
-      
+
       if (items.isEmpty) {
         _logger.info('No sync items to export');
         return null;
       }
-      
+
       // Convert to JSON
       final jsonData = jsonEncode(items.map((e) => e.toJson()).toList());
-      
+
       // Save to file
-      final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final filePath = '${directory.path}/sync_export_$timestamp.json';
-      
+      final filePath = 'sync_export_$timestamp.json';
+
       final file = File(filePath);
       await file.writeAsString(jsonData);
-      
+
       _logger.info('Sync data exported to $filePath');
       return filePath;
     } catch (e, stackTrace) {
@@ -368,29 +366,29 @@ class SyncService extends GetxService {
   Future<bool> importSyncData(String filePath) async {
     try {
       _logger.info('Importing sync data from $filePath');
-      
+
       // Read file
       final file = File(filePath);
       final jsonData = await file.readAsString();
-      
+
       // Parse JSON
       final List<dynamic> itemsJson = jsonDecode(jsonData);
       final items = itemsJson.map((e) => SyncItemModel.fromJson(e)).toList();
-      
+
       if (items.isEmpty) {
         _logger.info('No sync items to import');
         return false;
       }
-      
+
       // Import items
       for (final item in items) {
         await _syncRepository.addSyncItem(item);
       }
-      
+
       // Update pending count
       await _loadPendingSyncCount();
-      
-      _logger.info('Imported ${items.length} sync items');
+
+      _logger.info('Imported \${items.length} sync items');
       return true;
     } catch (e, stackTrace) {
       final error = await _errorHandler.handleError(e, stackTrace);
@@ -403,10 +401,10 @@ class SyncService extends GetxService {
   Future<bool> clearSyncData() async {
     try {
       _logger.info('Clearing sync data');
-      
+
       await _syncRepository.clearAllSyncItems();
       await _loadPendingSyncCount();
-      
+
       _logger.info('Sync data cleared');
       return true;
     } catch (e, stackTrace) {
@@ -423,9 +421,9 @@ class SyncService extends GetxService {
       final synced = await _syncRepository.getSyncedItemsCount();
       final failed = await _syncRepository.getFailedItemsCount();
       final total = pending + synced + failed;
-      
+
       final entityStats = await _syncRepository.getEntityTypeStats();
-      
+
       return {
         'pending': pending,
         'synced': synced,
@@ -449,4 +447,3 @@ class SyncService extends GetxService {
     }
   }
 }
-

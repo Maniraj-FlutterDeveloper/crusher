@@ -3,6 +3,25 @@ import 'package:get/get.dart';
 import '../core/error/app_error.dart';
 import '../core/values/app_colors.dart';
 
+// Helper function to get error title based on error type
+String getErrorTitle(AppError error) {
+  if (error is NetworkError) {
+    return 'Network Error';
+  } else if (error is DatabaseError) {
+    return 'Database Error';
+  } else if (error is AuthError) {
+    return 'Authentication Error';
+  } else if (error is ValidationError) {
+    return 'Validation Error';
+  } else if (error is BusinessError) {
+    return 'Operation Error';
+  } else if (error is FileSystemError) {
+    return 'File System Error';
+  } else {
+    return 'Error';
+  }
+}
+
 class ErrorDisplay extends StatelessWidget {
   final AppError error;
   final VoidCallback? onRetry;
@@ -17,14 +36,18 @@ class ErrorDisplay extends StatelessWidget {
     this.showDetails = false,
   }) : super(key: key);
   
+  String _getTitle() {
+    return getErrorTitle(error);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.errorColor.withOpacity(0.1),
+        color: AppColors.errorColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.errorColor.withOpacity(0.3)),
+        border: Border.all(color: AppColors.errorColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -32,7 +55,7 @@ class ErrorDisplay extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              const Icon(
                 Icons.error_outline,
                 color: AppColors.errorColor,
                 size: 24,
@@ -40,7 +63,7 @@ class ErrorDisplay extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  error.title,
+                  _getTitle(),
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: AppColors.errorColor,
                     fontWeight: FontWeight.bold,
@@ -54,10 +77,10 @@ class ErrorDisplay extends StatelessWidget {
             error.message,
             style: Theme.of(context).textTheme.bodyMedium,
           ),
-          if (error.field != null) ...[
+          if (error is ValidationError) ...[
             const SizedBox(height: 8),
             Text(
-              'Field: ${error.field}',
+                'Field: ${(error as ValidationError).field}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontStyle: FontStyle.italic,
               ),
@@ -66,10 +89,10 @@ class ErrorDisplay extends StatelessWidget {
           if (showDetails && error.stackTrace != null) ...[
             const SizedBox(height: 16),
             ExpansionTile(
-              title: Text(
-                'Technical Details',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+                title: const Text(
+                  'Technical Details',
+                  style: TextStyle(fontSize: 12),
+                ),
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
@@ -109,12 +132,12 @@ class ErrorDisplay extends StatelessWidget {
 }
 
 class ErrorSnackbar {
-  static void show(AppError error) {
+  static void show(AppError error, {VoidCallback? onRetry}) {
     Get.snackbar(
-      error.title,
+      getErrorTitle(error),
       error.message,
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: AppColors.errorColor.withOpacity(0.9),
+      backgroundColor: AppColors.errorColor.withValues(alpha: 0.9),
       colorText: Colors.white,
       margin: const EdgeInsets.all(16),
       duration: const Duration(seconds: 5),
@@ -122,9 +145,9 @@ class ErrorSnackbar {
         Icons.error_outline,
         color: Colors.white,
       ),
-      mainButton: error.canRetry
+      mainButton: onRetry != null
           ? TextButton(
-              onPressed: error.retry,
+              onPressed: onRetry,
               child: const Text(
                 'RETRY',
                 style: TextStyle(color: Colors.white),
@@ -136,17 +159,17 @@ class ErrorSnackbar {
 }
 
 class ErrorDialog {
-  static void show(AppError error) {
+  static void show(AppError error, {VoidCallback? onRetry}) {
     Get.dialog(
       AlertDialog(
         title: Row(
           children: [
-            Icon(
+            const Icon(
               Icons.error_outline,
               color: AppColors.errorColor,
             ),
             const SizedBox(width: 8),
-            Text(error.title),
+            Text(getErrorTitle(error)),
           ],
         ),
         content: Column(
@@ -154,7 +177,7 @@ class ErrorDialog {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(error.message),
-            if (error.field != null) ...[
+            if (error is ValidationError) ...[
               const SizedBox(height: 8),
               Text(
                 'Field: ${error.field}',
@@ -171,11 +194,11 @@ class ErrorDialog {
             onPressed: () => Get.back(),
             child: const Text('CLOSE'),
           ),
-          if (error.canRetry)
+          if (onRetry != null)
             ElevatedButton(
               onPressed: () {
                 Get.back();
-                error.retry();
+                onRetry();
               },
               child: const Text('RETRY'),
             ),

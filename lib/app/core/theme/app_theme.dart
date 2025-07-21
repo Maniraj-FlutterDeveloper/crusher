@@ -7,34 +7,21 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.light(
-        primary: AppColors.primaryColor,
-        primaryContainer: AppColors.primaryLightColor,
-        secondary: AppColors.secondaryColor,
-        secondaryContainer: AppColors.secondaryLightColor,
-        surface: AppColors.surfaceColor,
-        background: AppColors.backgroundColor,
-        error: AppColors.errorColor,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: AppColors.textColor,
-        onBackground: AppColors.textColor,
-        onError: Colors.white,
-      ),
+      colorScheme: AppColors.lightColorScheme,
       scaffoldBackgroundColor: AppColors.backgroundColor,
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.light().textTheme),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.surfaceColor,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -54,7 +41,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primaryColor,
-          side: BorderSide(color: AppColors.primaryColor),
+          side: const BorderSide(color: AppColors.primaryColor),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -76,45 +63,51 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.borderColor),
+          borderSide: const BorderSide(color: AppColors.borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.borderColor),
+          borderSide: const BorderSide(color: AppColors.borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.errorColor),
+          borderSide: const BorderSide(color: AppColors.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.errorColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.errorColor, width: 2),
         ),
-        labelStyle: TextStyle(color: AppColors.textLightColor),
-        hintStyle: TextStyle(color: AppColors.textLightColor.withOpacity(0.7)),
+        labelStyle: const TextStyle(color: AppColors.textLightColor),
+        hintStyle: TextStyle(
+          // CORRECTED: Used withOpacity() instead of withValues()
+          color: AppColors.textLightColor.withAlpha(178),
+        ),
       ),
       dataTableTheme: DataTableThemeData(
-        headingRowColor: MaterialStateProperty.all(AppColors.primaryColor.withOpacity(0.1)),
-        dataRowColor: MaterialStateProperty.all(Colors.transparent),
+        headingRowColor: WidgetStateProperty.all(
+          // CORRECTED: Used withOpacity() instead of withValues()
+          AppColors.primaryColor.withAlpha(25),
+        ),
+        dataRowColor: WidgetStateProperty.all(Colors.transparent),
         dividerThickness: 1,
         columnSpacing: 24,
-        headingTextStyle: TextStyle(
+        headingTextStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           color: AppColors.primaryColor,
         ),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.primaryColor,
         unselectedLabelColor: AppColors.textLightColor,
         indicatorColor: AppColors.primaryColor,
         labelStyle: TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -122,20 +115,20 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.textColor,
-        contentTextStyle: TextStyle(color: Colors.white),
+        contentTextStyle: const TextStyle(color: Colors.white),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
         behavior: SnackBarBehavior.floating,
       ),
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: AppColors.borderColor,
         thickness: 1,
         space: 1,
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryColor;
           }
           return Colors.transparent;
@@ -145,22 +138,22 @@ class AppTheme {
         ),
       ),
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryColor;
           }
           return AppColors.textLightColor;
         }),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryColor;
           }
           return Colors.white;
         }),
-        trackColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryLightColor;
           }
           return AppColors.borderColor;
@@ -173,34 +166,21 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
-      colorScheme: ColorScheme.dark(
-        primary: AppColors.primaryColor,
-        primaryContainer: AppColors.primaryDarkColor,
-        secondary: AppColors.secondaryColor,
-        secondaryContainer: AppColors.secondaryDarkColor,
-        surface: AppColors.darkSurfaceColor,
-        background: AppColors.darkBackgroundColor,
-        error: AppColors.errorColor,
-        onPrimary: Colors.white,
-        onSecondary: Colors.white,
-        onSurface: AppColors.textDarkColor,
-        onBackground: AppColors.textDarkColor,
-        onError: Colors.white,
-      ),
+      colorScheme: AppColors.darkColorScheme,
       scaffoldBackgroundColor: AppColors.darkBackgroundColor,
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkSurfaceColor,
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: AppColors.darkSurfaceColor,
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -220,7 +200,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primaryColor,
-          side: BorderSide(color: AppColors.primaryColor),
+          side: const BorderSide(color: AppColors.primaryColor),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
@@ -242,45 +222,51 @@ class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.darkBorderColor),
+          borderSide: const BorderSide(color: AppColors.darkBorderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.darkBorderColor),
+          borderSide: const BorderSide(color: AppColors.darkBorderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.primaryColor, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.errorColor),
+          borderSide: const BorderSide(color: AppColors.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.errorColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.errorColor, width: 2),
         ),
-        labelStyle: TextStyle(color: AppColors.textDarkLightColor),
-        hintStyle: TextStyle(color: AppColors.textDarkLightColor.withOpacity(0.7)),
+        labelStyle: const TextStyle(color: AppColors.textDarkLightColor),
+        hintStyle: TextStyle(
+          // CORRECTED: Used withOpacity() instead of withValues()
+          color: AppColors.textDarkLightColor.withAlpha(178),
+        ),
       ),
       dataTableTheme: DataTableThemeData(
-        headingRowColor: MaterialStateProperty.all(AppColors.primaryColor.withOpacity(0.2)),
-        dataRowColor: MaterialStateProperty.all(Colors.transparent),
+        headingRowColor: WidgetStateProperty.all(
+          // CORRECTED: Used withOpacity() instead of withValues()
+          AppColors.primaryColor.withAlpha(51),
+        ),
+        dataRowColor: WidgetStateProperty.all(Colors.transparent),
         dividerThickness: 1,
         columnSpacing: 24,
-        headingTextStyle: TextStyle(
+        headingTextStyle: const TextStyle(
           fontWeight: FontWeight.bold,
           color: AppColors.primaryColor,
         ),
       ),
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.primaryColor,
         unselectedLabelColor: AppColors.textDarkLightColor,
         indicatorColor: AppColors.primaryColor,
         labelStyle: TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
       ),
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: AppColors.darkSurfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -288,20 +274,20 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: AppColors.darkSurfaceColor,
-        contentTextStyle: TextStyle(color: Colors.white),
+        contentTextStyle: const TextStyle(color: Colors.white),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
         behavior: SnackBarBehavior.floating,
       ),
-      dividerTheme: DividerThemeData(
+      dividerTheme: const DividerThemeData(
         color: AppColors.darkBorderColor,
         thickness: 1,
         space: 1,
       ),
       checkboxTheme: CheckboxThemeData(
-        fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryColor;
           }
           return Colors.transparent;
@@ -311,22 +297,22 @@ class AppTheme {
         ),
       ),
       radioTheme: RadioThemeData(
-        fillColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        fillColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryColor;
           }
           return AppColors.textDarkLightColor;
         }),
       ),
       switchTheme: SwitchThemeData(
-        thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        thumbColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryColor;
           }
           return Colors.white;
         }),
-        trackColor: MaterialStateProperty.resolveWith<Color>((states) {
-          if (states.contains(MaterialState.selected)) {
+        trackColor: WidgetStateProperty.resolveWith<Color>((Set<WidgetState> states) {
+          if (states.contains(WidgetState.selected)) {
             return AppColors.primaryLightColor;
           }
           return AppColors.darkBorderColor;
@@ -335,4 +321,3 @@ class AppTheme {
     );
   }
 }
-

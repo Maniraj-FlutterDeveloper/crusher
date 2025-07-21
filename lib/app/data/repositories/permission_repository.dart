@@ -1,13 +1,14 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/permission_model.dart';
 import 'package:get/get.dart';
+import '../services/database_service.dart';
 
 class PermissionRepository {
   final DatabaseService _databaseService = Get.find<DatabaseService>();
-  
+
   // Table name
   static const String tableName = 'permissions';
-  
+
   // Create table
   static Future<void> createTable(Database db) async {
     await db.execute('''
@@ -22,100 +23,87 @@ class PermissionRepository {
       )
     ''');
   }
-  
+
   // Get all permissions
   Future<List<PermissionModel>> getAllPermissions() async {
-    final db = await _databaseService.database;
-    final List<Map<String, dynamic>> maps = await db.query(
+    final List<Map<String, dynamic>> maps = await _databaseService.query(
       tableName,
       orderBy: 'module, name',
     );
-    
+
     return List.generate(maps.length, (i) {
       return PermissionModel.fromJson(maps[i]);
     });
   }
-  
+
   // Get permission by ID
   Future<PermissionModel?> getPermissionById(int id) async {
-    final db = await _databaseService.database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      tableName,
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
+    final Map<String, dynamic>? data = await _databaseService.getById(tableName, id.toString());
     
-    if (maps.isNotEmpty) {
-      return PermissionModel.fromJson(maps.first);
+    if (data != null) {
+      return PermissionModel.fromJson(data);
     }
-    
+
     return null;
   }
-  
+
   // Get permission by code
   Future<PermissionModel?> getPermissionByCode(String code) async {
-    final db = await _databaseService.database;
-    final List<Map<String, dynamic>> maps = await db.query(
+    final List<Map<String, dynamic>> maps = await _databaseService.query(
       tableName,
       where: 'code = ?',
       whereArgs: [code],
       limit: 1,
     );
-    
+
     if (maps.isNotEmpty) {
       return PermissionModel.fromJson(maps.first);
     }
-    
+
     return null;
   }
-  
+
   // Get permissions by module
   Future<List<PermissionModel>> getPermissionsByModule(String module) async {
-    final db = await _databaseService.database;
-    final List<Map<String, dynamic>> maps = await db.query(
+    final List<Map<String, dynamic>> maps = await _databaseService.query(
       tableName,
       where: 'module = ?',
       whereArgs: [module],
       orderBy: 'name',
     );
-    
+
     return List.generate(maps.length, (i) {
       return PermissionModel.fromJson(maps[i]);
     });
   }
-  
+
   // Insert a new permission
   Future<int> insertPermission(PermissionModel permission) async {
-    final db = await _databaseService.database;
-    return await db.insert(
+    return await _databaseService.insert(
       tableName,
       permission.toJson(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-  
+
   // Update an existing permission
   Future<int> updatePermission(PermissionModel permission) async {
-    final db = await _databaseService.database;
-    return await db.update(
+    return await _databaseService.update(
       tableName,
       permission.toJson(),
-      where: 'id = ?',
-      whereArgs: [permission.id],
+      'id = ?',
+      [permission.id],
     );
   }
-  
+
   // Delete a permission
   Future<int> deletePermission(int id) async {
-    final db = await _databaseService.database;
-    return await db.delete(
+    return await _databaseService.delete(
       tableName,
-      where: 'id = ?',
-      whereArgs: [id],
+      'id = ?',
+      [id],
     );
   }
-  
+
   // Initialize default permissions
   Future<void> initializeDefaultPermissions() async {
     final defaultPermissions = [
@@ -128,7 +116,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // User management permissions
       PermissionModel(
         name: 'View Users',
@@ -162,7 +150,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Role management permissions
       PermissionModel(
         name: 'View Roles',
@@ -196,7 +184,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Master configuration permissions
       PermissionModel(
         name: 'View Master Data',
@@ -214,7 +202,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Gate entry permissions
       PermissionModel(
         name: 'View Gate Entries',
@@ -248,7 +236,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Weighbridge permissions
       PermissionModel(
         name: 'View Weighbridge',
@@ -274,7 +262,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Material loading permissions
       PermissionModel(
         name: 'View Material Loading',
@@ -300,7 +288,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Billing permissions
       PermissionModel(
         name: 'View Invoices',
@@ -342,7 +330,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Reports permissions
       PermissionModel(
         name: 'View Reports',
@@ -360,7 +348,7 @@ class PermissionRepository {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
-      
+
       // Security permissions
       PermissionModel(
         name: 'View Audit Logs',
@@ -379,14 +367,13 @@ class PermissionRepository {
         updatedAt: DateTime.now(),
       ),
     ];
-    
+
     for (final permission in defaultPermissions) {
       final existingPermission = await getPermissionByCode(permission.code);
-      
+
       if (existingPermission == null) {
         await insertPermission(permission);
       }
     }
   }
 }
-

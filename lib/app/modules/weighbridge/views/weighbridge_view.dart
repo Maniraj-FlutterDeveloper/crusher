@@ -6,7 +6,6 @@ import '../controllers/weighbridge_controller.dart';
 import '../../../global_widgets/custom_form_field.dart';
 import '../../../global_widgets/master_data_table.dart';
 import '../../../global_widgets/responsive_layout.dart';
-import '../../../core/values/app_colors.dart';
 import '../../../core/values/app_constants.dart';
 import '../../../data/models/gate_entry_model.dart';
 import '../../../data/models/weighbridge_record_model.dart';
@@ -35,8 +34,8 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
         if (controller.canAddWeighbridgeRecords) {
           return FloatingActionButton(
             onPressed: () => _showGateEntrySearchDialog(context),
-            child: const Icon(Icons.add),
             tooltip: 'Add Weighbridge Record',
+            child: const Icon(Icons.add),
           );
         }
         return const SizedBox.shrink();
@@ -217,12 +216,12 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                         onSort: (_, __) => controller.changeSortColumn('vehicle_number'),
                         tooltip: 'Vehicle Number',
                       ),
-                      DataColumn2(
-                        label: const Text('Driver'),
+                      const DataColumn2(
+                        label: Text('Driver'),
                         tooltip: 'Driver Name',
                       ),
-                      DataColumn2(
-                        label: const Text('Tare Weight'),
+                      const DataColumn2(
+                        label: Text('Tare Weight'),
                         numeric: true,
                         tooltip: 'Tare Weight',
                       ),
@@ -231,8 +230,8 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                         onSort: (_, __) => controller.changeSortColumn('tare_weight_time'),
                         tooltip: 'Tare Weight Time',
                       ),
-                      DataColumn2(
-                        label: const Text('Gross Weight'),
+                      const DataColumn2(
+                        label: Text('Gross Weight'),
                         numeric: true,
                         tooltip: 'Gross Weight',
                       ),
@@ -247,8 +246,8 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                         onSort: (_, __) => controller.changeSortColumn('net_weight'),
                         tooltip: 'Net Weight',
                       ),
-                      DataColumn2(
-                        label: const Text('Actions'),
+                      const DataColumn2(
+                        label: Text('Actions'),
                         tooltip: 'Actions',
                         fixedWidth: 120,
                       ),
@@ -472,7 +471,7 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                   controller: controller.tareWeightController,
                   hint: 'e.g., 1000',
                   validator: controller.validateTareWeight,
-                  suffixText: Obx(() => controller.selectedWeightUnit.value?.symbol ?? 'kg'),
+                  suffixText: controller.selectedWeightUnit.value?.symbol ?? 'kg',
                 ),
                 const SizedBox(height: 16),
                 CustomFormField(
@@ -490,11 +489,15 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                       lastDate: DateTime(2100),
                     );
                     
+                    if (!context.mounted) return;
+                    
                     if (picked != null) {
                       final TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.now(),
                       );
+                      
+                      if (!context.mounted) return;
                       
                       if (pickedTime != null) {
                         final DateTime dateTime = DateTime(
@@ -552,8 +555,9 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
             onPressed: controller.isProcessing.value
                 ? null
                 : () async {
+                    final nav = Navigator.of(context);
                     if (await controller.saveTareWeight()) {
-                      Navigator.of(context).pop();
+                      nav.pop();
                     }
                   },
             child: controller.isProcessing.value
@@ -606,7 +610,7 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                   controller: controller.grossWeightController,
                   hint: 'e.g., 5000',
                   validator: controller.validateGrossWeight,
-                  suffixText: Obx(() => controller.selectedWeightUnit.value?.symbol ?? 'kg'),
+                  suffixText: controller.selectedWeightUnit.value?.symbol ?? 'kg',
                   onChanged: (_) => controller.calculateNetWeight(),
                 ),
                 const SizedBox(height: 16),
@@ -625,11 +629,15 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                       lastDate: DateTime(2100),
                     );
                     
+                    if (!context.mounted) return;
+                    
                     if (picked != null) {
                       final TimeOfDay? pickedTime = await showTimePicker(
                         context: context,
                         initialTime: TimeOfDay.now(),
                       );
+                      
+                      if (!context.mounted) return;
                       
                       if (pickedTime != null) {
                         final DateTime dateTime = DateTime(
@@ -650,7 +658,7 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
                   label: 'Net Weight',
                   controller: controller.netWeightController,
                   readOnly: true,
-                  suffixText: Obx(() => controller.selectedWeightUnit.value?.symbol ?? 'kg'),
+                  suffixText: controller.selectedWeightUnit.value?.symbol ?? 'kg',
                 ),
                 const SizedBox(height: 16),
                 Obx(() => DropdownButtonFormField<WeightUnitModel>(
@@ -695,8 +703,9 @@ class WeighbridgeView extends GetView<WeighbridgeController> {
             onPressed: controller.isProcessing.value
                 ? null
                 : () async {
+                    final nav = Navigator.of(context);
                     if (await controller.saveGrossWeight()) {
-                      Navigator.of(context).pop();
+                      nav.pop();
                     }
                   },
             child: controller.isProcessing.value

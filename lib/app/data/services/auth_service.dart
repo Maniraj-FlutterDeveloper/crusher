@@ -95,6 +95,12 @@ class AuthService extends GetxService {
     await checkAuth();
     return currentUser.value;
   }
+
+  // Check if user is admin
+  bool get isAdmin => hasRole(AppConstants.roleAdmin);
+
+  // Check if user is supervisor
+  bool get isSupervisor => hasRole(AppConstants.roleSupervisor);
   
   // Check if user has role
   bool hasRole(String roleName) {

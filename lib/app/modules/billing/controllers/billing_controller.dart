@@ -1,3 +1,5 @@
+import 'package:crusher_management/app/data/models/material_size_model.dart';
+import 'package:crusher_management/app/data/models/weight_unit_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -5,7 +7,6 @@ import '../../../core/values/app_constants.dart';
 import '../../../data/models/gate_entry_model.dart';
 import '../../../data/models/invoice_model.dart';
 import '../../../data/models/material_model.dart';
-import '../../../data/models/material_loading_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/invoice_repository.dart';
 import '../../../data/repositories/gate_entry_repository.dart';
@@ -181,7 +182,7 @@ class BillingController extends GetxController {
   Future<void> fetchWeightUnits() async {
     try {
       final units = await _materialLoadingRepository.getWeightUnits();
-      weightUnits.assignAll(units);
+      weightUnits.assignAll(units.cast<WeightUnitModel>());
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -390,7 +391,7 @@ class BillingController extends GetxController {
             final weightUnit = await _materialLoadingRepository.getWeightUnitById(record.weightUnitId);
             
             if (weightUnit != null) {
-              final rate = material.rate ?? 0;
+              final rate = material.unitPrice;
               
               final invoiceItem = InvoiceItemModel(
                 invoiceId: 0, // Will be set when invoice is created
@@ -667,9 +668,9 @@ class BillingController extends GetxController {
     isProcessing.value = true;
     
     try {
-      final pdfPath = await _pdfService.generateInvoicePdf(invoice);
+      await _pdfService.generateInvoice(invoice);
       
-      return pdfPath;
+      return null;
     } catch (e) {
       Get.snackbar(
         'Error',

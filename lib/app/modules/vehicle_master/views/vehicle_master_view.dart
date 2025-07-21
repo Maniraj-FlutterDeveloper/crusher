@@ -5,7 +5,6 @@ import '../controllers/vehicle_master_controller.dart';
 import '../../../global_widgets/custom_form_field.dart';
 import '../../../global_widgets/master_data_table.dart';
 import '../../../global_widgets/responsive_layout.dart';
-import '../../../core/values/app_colors.dart';
 
 class VehicleMasterView extends GetView<VehicleMasterController> {
   const VehicleMasterView({Key? key}) : super(key: key);
@@ -31,8 +30,8 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
         if (controller.canAddEditVehicles) {
           return FloatingActionButton(
             onPressed: () => _showVehicleForm(context),
-            child: const Icon(Icons.add),
             tooltip: 'Add Vehicle',
+            child: const Icon(Icons.add),
           );
         }
         return const SizedBox.shrink();
@@ -193,35 +192,35 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
               columns: [
                 DataColumn2(
                   label: const Text('Vehicle Number'),
-                  onSort: (_, __) => controller.changeSortColumn('vehicle_number'),
+                  onSort: (columnIndex, ascending) => controller.changeSortColumn(columnIndex, ascending),
                   tooltip: 'Vehicle Number',
                 ),
                 DataColumn2(
                   label: const Text('Vehicle Type'),
-                  onSort: (_, __) => controller.changeSortColumn('vehicle_type'),
+                  onSort: (columnIndex, ascending) => controller.changeSortColumn(columnIndex, ascending),
                   tooltip: 'Vehicle Type',
                 ),
                 DataColumn2(
                   label: const Text('Capacity (tons)'),
                   numeric: true,
-                  onSort: (_, __) => controller.changeSortColumn('capacity'),
+                  onSort: (columnIndex, ascending) => controller.changeSortColumn(columnIndex, ascending),
                   tooltip: 'Capacity in tons',
                 ),
                 DataColumn2(
                   label: const Text('Owner Name'),
-                  onSort: (_, __) => controller.changeSortColumn('owner_name'),
+                  onSort: (columnIndex, ascending) => controller.changeSortColumn(columnIndex, ascending),
                   tooltip: 'Owner Name',
                 ),
-                DataColumn2(
-                  label: const Text('Owner Mobile'),
+                const DataColumn2(
+                  label: Text('Owner Mobile'),
                   tooltip: 'Owner Mobile',
                 ),
-                DataColumn2(
-                  label: const Text('Status'),
+                const DataColumn2(
+                  label: Text('Status'),
                   tooltip: 'Status',
                 ),
-                DataColumn2(
-                  label: const Text('Actions'),
+                const DataColumn2(
+                  label: Text('Actions'),
                   tooltip: 'Actions',
                   fixedWidth: 120,
                 ),
@@ -239,7 +238,7 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: vehicle.isActive ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                          color: vehicle.isActive ? Colors.green.withAlpha(51) : Colors.red.withAlpha(51),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -313,9 +312,6 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
               currentPage: controller.currentPage.value,
               totalPages: controller.totalPages.value,
               onPageChanged: controller.changePage,
-              onSelectAll: controller.selectAllVehicles,
-              selectedItems: controller.selectedVehicles,
-              onSelectChanged: controller.selectVehicle,
             );
           }),
         ),
@@ -404,8 +400,10 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
           ),
           ElevatedButton(
             onPressed: () async {
-              if (await controller.saveVehicle()) {
-                Navigator.of(context).pop();
+              final nav = Navigator.of(context);
+              final bool success = await controller.saveVehicle();
+              if (success) {
+                nav.pop();
               }
             },
             child: const Text('Save'),
@@ -428,7 +426,8 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              final BuildContext currentContext = context;
+              Navigator.of(currentContext).pop();
               await controller.deleteVehicle(vehicle);
             },
             style: ElevatedButton.styleFrom(
@@ -454,7 +453,8 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.of(context).pop();
+              final BuildContext currentContext = context;
+              Navigator.of(currentContext).pop();
               await controller.deleteSelectedVehicles();
             },
             style: ElevatedButton.styleFrom(
@@ -466,5 +466,6 @@ class VehicleMasterView extends GetView<VehicleMasterController> {
       ),
     );
   }
+
 }
 

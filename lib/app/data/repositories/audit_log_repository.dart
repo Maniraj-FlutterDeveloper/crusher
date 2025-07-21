@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'package:crusher_management/app/data/services/database_service.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/audit_log_model.dart';
 import '../services/auth_service.dart';
@@ -9,10 +12,10 @@ import 'dart:io';
 class AuditLogRepository {
   final DatabaseService _databaseService = Get.find<DatabaseService>();
   final AuthService _authService = Get.find<AuthService>();
-  
+
   // Table name
   static const String tableName = 'audit_logs';
-  
+
   // Create table
   static Future<void> createTable(Database db) async {
     await db.execute('''
@@ -29,7 +32,7 @@ class AuditLogRepository {
       )
     ''');
   }
-  
+
   // Get all audit logs
   Future<List<AuditLogModel>> getAllAuditLogs() async {
     final db = await _databaseService.database;
@@ -37,12 +40,12 @@ class AuditLogRepository {
       tableName,
       orderBy: 'timestamp DESC',
     );
-    
+
     return List.generate(maps.length, (i) {
       return AuditLogModel.fromJson(maps[i]);
     });
   }
-  
+
   // Get audit logs by user ID
   Future<List<AuditLogModel>> getAuditLogsByUserId(int userId) async {
     final db = await _databaseService.database;
@@ -52,12 +55,12 @@ class AuditLogRepository {
       whereArgs: [userId],
       orderBy: 'timestamp DESC',
     );
-    
+
     return List.generate(maps.length, (i) {
       return AuditLogModel.fromJson(maps[i]);
     });
   }
-  
+
   // Get audit logs by module
   Future<List<AuditLogModel>> getAuditLogsByModule(String module) async {
     final db = await _databaseService.database;
@@ -67,12 +70,12 @@ class AuditLogRepository {
       whereArgs: [module],
       orderBy: 'timestamp DESC',
     );
-    
+
     return List.generate(maps.length, (i) {
       return AuditLogModel.fromJson(maps[i]);
     });
   }
-  
+
   // Get audit logs by action
   Future<List<AuditLogModel>> getAuditLogsByAction(String action) async {
     final db = await _databaseService.database;
@@ -82,12 +85,12 @@ class AuditLogRepository {
       whereArgs: [action],
       orderBy: 'timestamp DESC',
     );
-    
+
     return List.generate(maps.length, (i) {
       return AuditLogModel.fromJson(maps[i]);
     });
   }
-  
+
   // Get audit logs by date range
   Future<List<AuditLogModel>> getAuditLogsByDateRange(
     DateTime startDate,
@@ -103,12 +106,12 @@ class AuditLogRepository {
       ],
       orderBy: 'timestamp DESC',
     );
-    
+
     return List.generate(maps.length, (i) {
       return AuditLogModel.fromJson(maps[i]);
     });
   }
-  
+
   // Insert a new audit log
   Future<int> insertAuditLog(AuditLogModel auditLog) async {
     final db = await _databaseService.database;
@@ -118,7 +121,7 @@ class AuditLogRepository {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-  
+
   // Delete audit logs older than a certain date
   Future<int> deleteOldAuditLogs(DateTime cutoffDate) async {
     final db = await _databaseService.database;
@@ -128,7 +131,7 @@ class AuditLogRepository {
       whereArgs: [cutoffDate.toIso8601String()],
     );
   }
-  
+
   // Log an action
   Future<void> logAction({
     required String action,
@@ -138,17 +141,17 @@ class AuditLogRepository {
   }) async {
     try {
       // Get current user ID
-      final userId = _authService.currentUser?.id;
-      
+      final userId = _authService.currentUser.value?.id;
+
       // Get device info if requested
       String? userAgent;
       String? ipAddress;
-      
+
       if (includeDeviceInfo) {
         userAgent = await _getUserAgent();
         ipAddress = await _getIpAddress();
       }
-      
+
       // Create audit log
       final auditLog = AuditLogModel(
         userId: userId,
@@ -159,22 +162,22 @@ class AuditLogRepository {
         userAgent: userAgent,
         timestamp: DateTime.now(),
       );
-      
+
       // Insert audit log
       await insertAuditLog(auditLog);
     } catch (e) {
       debugPrint('Error logging action: $e');
     }
   }
-  
+
   // Get user agent string
   Future<String?> _getUserAgent() async {
     try {
       final deviceInfo = DeviceInfoPlugin();
       final packageInfo = await PackageInfo.fromPlatform();
-      
+
       String deviceInfoStr;
-      
+
       if (Platform.isAndroid) {
         final androidInfo = await deviceInfo.androidInfo;
         deviceInfoStr = '${androidInfo.brand} ${androidInfo.model} (Android ${androidInfo.version.release})';
@@ -193,14 +196,14 @@ class AuditLogRepository {
       } else {
         deviceInfoStr = 'Unknown Device';
       }
-      
+
       return 'Crusher App ${packageInfo.version} (${packageInfo.buildNumber}) / $deviceInfoStr';
     } catch (e) {
       debugPrint('Error getting user agent: $e');
       return null;
     }
   }
-  
+
   // Get IP address
   Future<String?> _getIpAddress() async {
     try {
@@ -208,11 +211,11 @@ class AuditLogRepository {
         includeLoopback: false,
         type: InternetAddressType.IPv4,
       );
-      
+
       if (interfaces.isNotEmpty && interfaces.first.addresses.isNotEmpty) {
         return interfaces.first.addresses.first.address;
       }
-      
+
       return null;
     } catch (e) {
       debugPrint('Error getting IP address: $e');
@@ -220,4 +223,3 @@ class AuditLogRepository {
     }
   }
 }
-

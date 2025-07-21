@@ -44,20 +44,18 @@ class ExcelService {
         TextCellValue(entry.sessionId),
         TextCellValue(entry.vehicle?.vehicleNumber ?? 'N/A'),
         TextCellValue(entry.driverName ?? 'N/A'),
-        TextCellValue(entry.entryTime != null 
-          ? DateFormat(AppConstants.dateTimeFormat).format(entry.entryTime!) 
-          : 'N/A'),
+        TextCellValue(DateFormat(AppConstants.dateTimeFormat).format(entry.entryTime)),
         TextCellValue(entry.exitTime != null 
           ? DateFormat(AppConstants.dateTimeFormat).format(entry.exitTime!) 
           : 'N/A'),
         TextCellValue(entry.tareWeight != null 
-          ? '${entry.tareWeight} ${entry.weightUnit?.code ?? ''}' 
+          ? '${entry.tareWeight}' 
           : 'N/A'),
         TextCellValue(entry.grossWeight != null 
-          ? '${entry.grossWeight} ${entry.weightUnit?.code ?? ''}' 
+          ? '${entry.grossWeight}' 
           : 'N/A'),
         TextCellValue(entry.netWeight != null 
-          ? '${entry.netWeight} ${entry.weightUnit?.code ?? ''}' 
+          ? '${entry.netWeight}' 
           : 'N/A'),
         TextCellValue(entry.status),
       ]);
@@ -65,7 +63,18 @@ class ExcelService {
     
     // Auto fit columns
     for (int i = 0; i < 9; i++) {
-      sheet.setColumnAutoFit(i);
+      // Find the maximum content length in the column
+      var maxLength = 0;
+      for (var row in sheet.rows) {
+        if (row.length > i && row[i] != null && row[i]?.value != null) {
+          var contentLength = row[i]!.value.toString().length;
+          if (contentLength > maxLength) {
+            maxLength = contentLength;
+          }
+        }
+      }
+      // Set column width based on content length
+      sheet.setColumnWidth(i, (maxLength + 2) * 1.2); // Adding some padding
     }
     
     // Save the file
@@ -77,6 +86,8 @@ class ExcelService {
     if (fileBytes != null) {
       final file = File(filePath);
       await file.writeAsBytes(fileBytes);
+    } else {
+      throw Exception('Failed to encode Excel file');
     }
     
     return filePath;
@@ -128,12 +139,14 @@ class ExcelService {
           };
         }
         
-        buyerMap[invoice.buyerId!]['invoiceCount'] += 1;
-        buyerMap[invoice.buyerId!]['totalAmount'] += invoice.baseAmount;
-        buyerMap[invoice.buyerId!]['cgstAmount'] += invoice.cgstAmount;
-        buyerMap[invoice.buyerId!]['sgstAmount'] += invoice.sgstAmount;
-        buyerMap[invoice.buyerId!]['igstAmount'] += invoice.igstAmount;
-        buyerMap[invoice.buyerId!]['netAmount'] += invoice.totalAmount;
+        if (invoice.buyerId != null && buyerMap.containsKey(invoice.buyerId)) {
+          buyerMap[invoice.buyerId]?['invoiceCount'] = (buyerMap[invoice.buyerId]?['invoiceCount'] ?? 0) + 1;
+          buyerMap[invoice.buyerId]?['totalAmount'] = (buyerMap[invoice.buyerId]?['totalAmount'] ?? 0.0) + invoice.baseAmount;
+          buyerMap[invoice.buyerId]?['cgstAmount'] = (buyerMap[invoice.buyerId]?['cgstAmount'] ?? 0.0) + invoice.cgstAmount;
+          buyerMap[invoice.buyerId]?['sgstAmount'] = (buyerMap[invoice.buyerId]?['sgstAmount'] ?? 0.0) + invoice.sgstAmount;
+          buyerMap[invoice.buyerId]?['igstAmount'] = (buyerMap[invoice.buyerId]?['igstAmount'] ?? 0.0) + invoice.igstAmount;
+          buyerMap[invoice.buyerId]?['netAmount'] = (buyerMap[invoice.buyerId]?['netAmount'] ?? 0.0) + invoice.totalAmount;
+        }
       }
     }
     
@@ -144,11 +157,11 @@ class ExcelService {
       sheet.appendRow([
         TextCellValue(buyer['name']),
         IntCellValue(buyer['invoiceCount']),
-        DoubleCellValue(buyer['totalAmount']),
-        DoubleCellValue(buyer['cgstAmount']),
-        DoubleCellValue(buyer['sgstAmount']),
-        DoubleCellValue(buyer['igstAmount']),
-        DoubleCellValue(buyer['netAmount']),
+        TextCellValue(buyer['totalAmount'].toString()),
+              TextCellValue(buyer['cgstAmount'].toString()),
+              TextCellValue(buyer['sgstAmount'].toString()),
+              TextCellValue(buyer['igstAmount'].toString()),
+              TextCellValue(buyer['netAmount'].toString()),
       ]);
     }
     
@@ -173,16 +186,27 @@ class ExcelService {
     sheet.appendRow([
       TextCellValue('Total'),
       IntCellValue(totalInvoiceCount),
-      DoubleCellValue(totalAmount),
-      DoubleCellValue(totalCgst),
-      DoubleCellValue(totalSgst),
-      DoubleCellValue(totalIgst),
-      DoubleCellValue(totalNetAmount),
+      TextCellValue(totalAmount.toString()),
+          TextCellValue(totalCgst.toString()),
+          TextCellValue(totalSgst.toString()),
+          TextCellValue(totalIgst.toString()),
+          TextCellValue(totalNetAmount.toString()),
     ]);
     
     // Auto fit columns
     for (int i = 0; i < 7; i++) {
-      sheet.setColumnAutoFit(i);
+      // Find the maximum content length in the column
+      var maxLength = 0;
+      for (var row in sheet.rows) {
+        if (row.length > i && row[i] != null && row[i]?.value != null) {
+          var contentLength = row[i]!.value.toString().length;
+          if (contentLength > maxLength) {
+            maxLength = contentLength;
+          }
+        }
+      }
+      // Set column width based on content length
+      sheet.setColumnWidth(i, (maxLength + 2) * 1.2); // Adding some padding
     }
     
     // Save the file
@@ -194,6 +218,8 @@ class ExcelService {
     if (fileBytes != null) {
       final file = File(filePath);
       await file.writeAsBytes(fileBytes);
+    } else {
+      throw Exception('Failed to encode Excel file');
     }
     
     return filePath;
@@ -227,35 +253,34 @@ class ExcelService {
       TextCellValue('Status'),
     ]);
     
-    // Group loadings by supplier
-    final supplierMap = <int, Map<String, dynamic>>{};
+    // Group loadings by material
+    final materialMap = <String, Map<String, dynamic>>{};
     
     for (final loading in loadings) {
-      if (loading.supplierId != null && loading.supplier != null) {
-        final key = '${loading.supplierId}_${loading.materialId}_${loading.materialSizeId ?? 0}';
+      // Since GateEntryModel doesn't have supplierId or supplier properties, we'll group by material instead
+      final key = '${loading.materialId}_${loading.materialSizeId ?? 0}';
         
-        if (!supplierMap.containsKey(key)) {
-          supplierMap[key] = {
-            'supplierName': loading.supplier!.name,
-            'materialName': loading.material?.name ?? 'N/A',
-            'sizeName': loading.materialSize?.name ?? 'N/A',
-            'quantity': 0.0,
-            'unit': loading.weightUnit?.code ?? '',
-            'status': loading.status,
-          };
-        }
-        
-        supplierMap[key]['quantity'] += loading.quantity;
+      if (!materialMap.containsKey(key)) {
+        materialMap[key] = {
+          'supplierName': 'N/A', // Since supplier is not available
+          'materialName': loading.material?.name ?? 'N/A',
+          'sizeName': loading.materialSize?.name ?? 'N/A',
+          'quantity': 0.0,
+          'unit': loading.weightUnit?.symbol ?? '',
+          'status': loading.status,
+        };
       }
+      
+      materialMap[key]?['quantity'] = (materialMap[key]?['quantity'] ?? 0.0) + loading.quantity;
     }
     
     // Add data rows
-    for (final data in supplierMap.values) {
+    for (final data in materialMap.values) {
       sheet.appendRow([
         TextCellValue(data['supplierName']),
         TextCellValue(data['materialName']),
         TextCellValue(data['sizeName']),
-        DoubleCellValue(data['quantity']),
+        TextCellValue(data['quantity'].toString()),
         TextCellValue(data['unit']),
         TextCellValue(data['status']),
       ]);
@@ -263,7 +288,18 @@ class ExcelService {
     
     // Auto fit columns
     for (int i = 0; i < 6; i++) {
-      sheet.setColumnAutoFit(i);
+      // Find the maximum content length in the column
+      var maxLength = 0;
+      for (var row in sheet.rows) {
+        if (row.length > i && row[i] != null && row[i]?.value != null) {
+          var contentLength = row[i]!.value.toString().length;
+          if (contentLength > maxLength) {
+            maxLength = contentLength;
+          }
+        }
+      }
+      // Set column width based on content length
+      sheet.setColumnWidth(i, (maxLength + 2) * 1.2); // Adding some padding
     }
     
     // Save the file
@@ -275,6 +311,8 @@ class ExcelService {
     if (fileBytes != null) {
       final file = File(filePath);
       await file.writeAsBytes(fileBytes);
+    } else {
+      throw Exception('Failed to encode Excel file');
     }
     
     return filePath;
@@ -320,29 +358,40 @@ class ExcelService {
           'sizeName': loading.materialSize?.name ?? 'N/A',
           'purpose': loading.purpose,
           'quantity': 0.0,
-          'unit': loading.weightUnit?.code ?? '',
+          'unit': loading.weightUnit?.symbol ?? '',
           'status': loading.status,
         };
       }
       
-      materialMap[key]['quantity'] += loading.quantity;
+      materialMap[key]?['quantity'] = (materialMap[key]?['quantity'] ?? 0.0) + loading.quantity;
     }
     
     // Add data rows
     for (final data in materialMap.values) {
       sheet.appendRow([
-        TextCellValue(data['materialName']),
-        TextCellValue(data['sizeName']),
-        TextCellValue(data['purpose']),
-        DoubleCellValue(data['quantity']),
-        TextCellValue(data['unit']),
-        TextCellValue(data['status']),
+        TextCellValue(data['materialName'] ?? 'N/A'),
+        TextCellValue(data['sizeName'] ?? 'N/A'),
+        TextCellValue(data['purpose'] ?? 'N/A'),
+        TextCellValue((data['quantity'] ?? 0.0).toString()),
+        TextCellValue(data['unit'] ?? ''),
+        TextCellValue(data['status'] ?? 'N/A'),
       ]);
     }
     
     // Auto fit columns
     for (int i = 0; i < 6; i++) {
-      sheet.setColumnAutoFit(i);
+      // Find the maximum content length in the column
+      var maxLength = 0;
+      for (var row in sheet.rows) {
+        if (row.length > i && row[i] != null && row[i]?.value != null) {
+          var contentLength = row[i]!.value.toString().length;
+          if (contentLength > maxLength) {
+            maxLength = contentLength;
+          }
+        }
+      }
+      // Set column width based on content length
+      sheet.setColumnWidth(i, (maxLength + 2) * 1.2); // Adding some padding
     }
     
     // Save the file
@@ -354,6 +403,8 @@ class ExcelService {
     if (fileBytes != null) {
       final file = File(filePath);
       await file.writeAsBytes(fileBytes);
+    } else {
+      throw Exception('Failed to encode Excel file');
     }
     
     return filePath;
@@ -398,11 +449,11 @@ class ExcelService {
           TextCellValue(DateFormat(AppConstants.dateFormat).format(invoice.invoiceDate)),
           TextCellValue(invoice.buyer?.name ?? 'N/A'),
           TextCellValue(invoice.buyer?.gstin ?? 'N/A'),
-          DoubleCellValue(invoice.baseAmount),
-          DoubleCellValue(invoice.cgstAmount),
-          DoubleCellValue(invoice.sgstAmount),
-          DoubleCellValue(invoice.igstAmount),
-          DoubleCellValue(invoice.totalAmount),
+          TextCellValue(invoice.baseAmount.toString()),
+          TextCellValue(invoice.cgstAmount.toString()),
+          TextCellValue(invoice.sgstAmount.toString()),
+          TextCellValue(invoice.igstAmount.toString()),
+          TextCellValue(invoice.totalAmount.toString()),
         ]);
       }
     }
@@ -430,16 +481,27 @@ class ExcelService {
       TextCellValue(''),
       TextCellValue(''),
       TextCellValue(''),
-      DoubleCellValue(totalBaseAmount),
-      DoubleCellValue(totalCgst),
-      DoubleCellValue(totalSgst),
-      DoubleCellValue(totalIgst),
-      DoubleCellValue(totalAmount),
+      TextCellValue(totalBaseAmount.toString()),
+      TextCellValue(totalCgst.toString()),
+      TextCellValue(totalSgst.toString()),
+      TextCellValue(totalIgst.toString()),
+      TextCellValue(totalAmount.toString()),
     ]);
     
     // Auto fit columns
-    for (int i = 0; i < 9; i++) {
-      sheet.setColumnAutoFit(i);
+    for (int i = 0; i < 5; i++) {
+      // Find the maximum content length in the column
+      var maxLength = 0;
+      for (var row in sheet.rows) {
+        if (row.length > i && row[i] != null && row[i]?.value != null) {
+          var contentLength = row[i]!.value.toString().length;
+          if (contentLength > maxLength) {
+            maxLength = contentLength;
+          }
+        }
+      }
+      // Set column width based on content length
+      sheet.setColumnWidth(i, (maxLength + 2) * 1.2); // Adding some padding
     }
     
     // Save the file

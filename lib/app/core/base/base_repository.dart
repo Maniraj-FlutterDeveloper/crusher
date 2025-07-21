@@ -3,10 +3,10 @@ import 'package:get/get.dart';
 import '../error/database_error_handler.dart';
 import '../services/logger_service.dart';
 import '../services/sync_service.dart';
-import '../../data/services/db_service.dart';
+import '../../data/services/database_service.dart';
 
 abstract class BaseRepository {
-  final DbService _dbService = Get.find<DbService>();
+  final DatabaseService _databaseService = Get.find<DatabaseService>();
   final LoggerService _logger = Get.find<LoggerService>();
   final DatabaseErrorHandler _dbErrorHandler = Get.find<DatabaseErrorHandler>();
   final SyncService _syncService = Get.find<SyncService>();
@@ -16,7 +16,7 @@ abstract class BaseRepository {
   String get entityType;
 
   // Getters for services
-  DbService get dbService => _dbService;
+  DatabaseService get databaseService => _databaseService;
   LoggerService get logger => _logger;
   DatabaseErrorHandler get dbErrorHandler => _dbErrorHandler;
   SyncService get syncService => _syncService;
@@ -29,8 +29,7 @@ abstract class BaseRepository {
   }) async {
     final id = await dbErrorHandler.handleWrite(
       () async {
-        final db = await dbService.database;
-        return await db.insert(
+        return await databaseService.insert(
           tableName,
           data,
         );
@@ -62,12 +61,11 @@ abstract class BaseRepository {
   }) async {
     final result = await dbErrorHandler.handleUpdate(
       () async {
-        final db = await dbService.database;
-        return await db.update(
+        return await databaseService.update(
           tableName,
           data,
-          where: 'id = ?',
-          whereArgs: [id],
+          'id = ?',
+          [id],
         );
       },
       tableName: tableName,
@@ -97,14 +95,7 @@ abstract class BaseRepository {
     // Get the data before deleting (for sync purposes)
     final data = await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        final result = await db.query(
-          tableName,
-          where: 'id = ?',
-          whereArgs: [id],
-          limit: 1,
-        );
-        return result.isNotEmpty ? result.first : null;
+        return await databaseService.getById(tableName, id);
       },
       tableName: tableName,
       errorMessage: 'Failed to get $entityType data for deletion',
@@ -112,11 +103,10 @@ abstract class BaseRepository {
 
     final result = await dbErrorHandler.handleDelete(
       () async {
-        final db = await dbService.database;
-        return await db.delete(
+        return await databaseService.delete(
           tableName,
-          where: 'id = ?',
-          whereArgs: [id],
+          'id = ?',
+          [id],
         );
       },
       tableName: tableName,
@@ -141,14 +131,7 @@ abstract class BaseRepository {
   Future<Map<String, dynamic>?> getById(String id) async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        final result = await db.query(
-          tableName,
-          where: 'id = ?',
-          whereArgs: [id],
-          limit: 1,
-        );
-        return result.isNotEmpty ? result.first : null;
+        return await databaseService.getById(tableName, id);
       },
       tableName: tableName,
       errorMessage: 'Failed to get $entityType by ID',
@@ -159,8 +142,7 @@ abstract class BaseRepository {
   Future<List<Map<String, dynamic>>> getAll() async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        return await db.query(tableName);
+        return await databaseService.getAll(tableName);
       },
       tableName: tableName,
       errorMessage: 'Failed to get all $entityType records',
@@ -175,11 +157,10 @@ abstract class BaseRepository {
   }) async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        return await db.query(
+        return await databaseService.getPaginated(
           tableName,
+          page: page,
           limit: limit,
-          offset: (page - 1) * limit,
           orderBy: orderBy,
         );
       },
@@ -192,9 +173,7 @@ abstract class BaseRepository {
   Future<int> count() async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        final result = await db.rawQuery('SELECT COUNT(*) as count FROM $tableName');
-        return result.first['count'] as int;
+        return await databaseService.count(tableName);
       },
       tableName: tableName,
       errorMessage: 'Failed to count $entityType records',
@@ -205,15 +184,7 @@ abstract class BaseRepository {
   Future<bool> exists(String id) async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        final result = await db.query(
-          tableName,
-          columns: ['id'],
-          where: 'id = ?',
-          whereArgs: [id],
-          limit: 1,
-        );
-        return result.isNotEmpty;
+        return await databaseService.exists(tableName, id);
       },
       tableName: tableName,
       errorMessage: 'Failed to check if $entityType exists',
@@ -230,8 +201,7 @@ abstract class BaseRepository {
   }) async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        return await db.query(
+        return await databaseService.query(
           tableName,
           where: where,
           whereArgs: whereArgs,
@@ -252,8 +222,7 @@ abstract class BaseRepository {
   ]) async {
     return await dbErrorHandler.handleRead(
       () async {
-        final db = await dbService.database;
-        return await db.rawQuery(sql, arguments);
+        return await databaseService.rawQuery(sql, arguments);
       },
       tableName: tableName,
       errorMessage: 'Failed to execute raw query on $entityType',

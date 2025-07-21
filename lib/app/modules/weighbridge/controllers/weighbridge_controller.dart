@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../../../core/values/app_constants.dart';
 import '../../../data/models/gate_entry_model.dart';
-import '../../../data/models/vehicle_model.dart';
 import '../../../data/models/weighbridge_record_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/weighbridge_repository.dart';
@@ -15,6 +14,7 @@ import '../../../data/services/pdf_service.dart';
 class WeighbridgeController extends GetxController {
   final WeighbridgeRepository _weighbridgeRepository = Get.find<WeighbridgeRepository>();
   final GateEntryRepository _gateEntryRepository = Get.find<GateEntryRepository>();
+  // Reserved for future vehicle-related functionality
   final VehicleRepository _vehicleRepository = Get.find<VehicleRepository>();
   final AuthService _authService = Get.find<AuthService>();
   final PdfService _pdfService = Get.find<PdfService>();

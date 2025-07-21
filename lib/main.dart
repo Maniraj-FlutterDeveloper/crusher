@@ -5,12 +5,14 @@ import 'package:window_size/window_size.dart';
 import 'dart:io';
 import 'app/core/theme/app_theme.dart';
 import 'app/data/services/db_service.dart';
+import 'app/data/services/database_service.dart';
 import 'app/data/services/storage_service.dart';
 import 'app/data/services/auth_service.dart';
 import 'app/routes/app_pages.dart';
 import 'app/routes/app_routes.dart';
 import 'app/core/values/app_constants.dart';
 import 'app/core/error/global_error_handler.dart';
+import 'app/core/error/database_error_handler.dart';
 import 'app/core/services/logger_service.dart';
 import 'app/data/repositories/audit_log_repository.dart';
 
@@ -48,6 +50,14 @@ Future<void> initServices() async {
   
   // Initialize database service
   await Get.putAsync(() => DbService().init());
+  
+  // Initialize database error handler
+  Get.put(DatabaseErrorHandler(
+    errorHandler: Get.find<ErrorHandler>(),
+  ), permanent: true);
+  
+  // Initialize database service wrapper
+  await Get.putAsync(() => DatabaseService().init());
   
   // Initialize auth service
   await Get.putAsync(() => AuthService().init());

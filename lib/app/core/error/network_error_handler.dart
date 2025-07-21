@@ -79,8 +79,8 @@ class NetworkErrorHandler {
       showDialog(
         context: Get.context!,
         barrierDismissible: false,
-        builder: (context) => WillPopScope(
-          onWillPop: () async => false,
+        builder: (context) => PopScope(
+          canPop: false,
           child: AlertDialog(
             title: const Text('No Internet Connection'),
             content: const Text(
@@ -146,11 +146,9 @@ class NetworkErrorHandler {
     try {
       final result = await InternetAddress.lookup('google.com');
       return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
-    } on SocketException catch (e) {
-      _logger.warning('No internet connection', e);
+    } on SocketException {
       return false;
-    } catch (e) {
-      _logger.error('Failed to check internet connection', e);
+    } catch (_) {
       return false;
     }
   }
@@ -178,7 +176,7 @@ class NetworkErrorHandler {
         stackTrace: StackTrace.current,
       );
       throw await _errorHandler.handleError(error);
-    } on SocketException catch (e) {
+    } on SocketException {
       final error = NetworkError.connection(
         message: errorMessage ?? 'Network connection error',
         stackTrace: StackTrace.current,
@@ -186,27 +184,19 @@ class NetworkErrorHandler {
       throw await _errorHandler.handleError(error);
     } on HttpException catch (e) {
       final error = NetworkError(
-        message: errorMessage ?? 'HTTP error: ${e.message}',
+        message: errorMessage ?? 'HTTP error: \${e.message}',
         code: 'HTTP_ERROR',
         details: e,
         stackTrace: StackTrace.current,
       );
       throw await _errorHandler.handleError(error);
-    } catch (e, stackTrace) {
+    } catch (e) {
       // If it's already an AppError, just rethrow it
       if (e is AppError) {
-        throw e;
+        rethrow;
       }
 
-      // Otherwise, convert it to a NetworkError
-      final error = NetworkError(
-        message: errorMessage ?? 'Network request failed',
-        code: 'NETWORK_ERROR',
-        details: e,
-        stackTrace: stackTrace,
-      );
-      throw await _errorHandler.handleError(error);
+      rethrow;
     }
   }
 }
-

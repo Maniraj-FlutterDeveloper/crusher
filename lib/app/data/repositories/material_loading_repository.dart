@@ -245,15 +245,33 @@ class MaterialLoadingRepository {
     return maps.map((map) => MaterialTypeModel.fromMap(map)).toList();
   }
   
-  // Get active material types
-  Future<List<MaterialTypeModel>> getActiveMaterialTypes() async {
+  // Get all weight units
+  Future<List<WeightUnitModel>> getWeightUnits() async {
     final List<Map<String, dynamic>> maps = await _dbProvider.query(
-      'material_type',
+      'weight_unit_type',
+      orderBy: 'name ASC',
+    );
+    return maps.map((map) => WeightUnitModel.fromMap(map)).toList();
+  }
+
+  // Get weight unit by id
+  Future<WeightUnitModel?> getWeightUnitById(int id) async {
+    final Map<String, dynamic>? map = await _dbProvider.getById('weight_unit_type', id);
+    if (map != null) {
+      return WeightUnitModel.fromMap(map);
+    }
+    return null;
+  }
+
+  // Get active weight units
+  Future<List<WeightUnitModel>> getActiveWeightUnits() async {
+    final List<Map<String, dynamic>> maps = await _dbProvider.query(
+      'weight_unit_type',
       where: 'is_active = ?',
       whereArgs: [1],
       orderBy: 'name ASC',
     );
-    return maps.map((map) => MaterialTypeModel.fromMap(map)).toList();
+    return maps.map((map) => WeightUnitModel.fromMap(map)).toList();
   }
   
   // Get material type by id

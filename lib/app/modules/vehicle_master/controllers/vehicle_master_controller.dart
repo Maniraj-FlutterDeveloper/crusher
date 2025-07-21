@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../data/models/vehicle_model.dart';
 import '../../../data/repositories/vehicle_repository.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../utils/logger.dart';
 
 class VehicleMasterController extends GetxController {
   final VehicleRepository _vehicleRepository = Get.find<VehicleRepository>();
@@ -61,7 +62,7 @@ class VehicleMasterController extends GetxController {
       applyFilters();
       calculateTotalPages();
     } catch (e) {
-      print('Error fetching vehicles: $e');
+      Logger.error('Error fetching vehicles', e);
       Get.snackbar(
         'Error',
         'Failed to fetch vehicles',
@@ -150,13 +151,28 @@ class VehicleMasterController extends GetxController {
   }
   
   // Change sort column
-  void changeSortColumn(String column) {
-    if (sortColumn.value == column) {
-      sortAscending.toggle();
-    } else {
-      sortColumn.value = column;
-      sortAscending.value = true;
+  void changeSortColumn(int columnIndex, bool ascending) {
+    // Map column index to column name
+    String column;
+    switch (columnIndex) {
+      case 0:
+        column = 'vehicle_number';
+        break;
+      case 1:
+        column = 'vehicle_type';
+        break;
+      case 2:
+        column = 'capacity';
+        break;
+      case 3:
+        column = 'owner_name';
+        break;
+      default:
+        column = 'vehicle_number';
     }
+    
+    sortColumn.value = column;
+    sortAscending.value = ascending;
     applyFilters();
   }
   
@@ -277,7 +293,7 @@ class VehicleMasterController extends GetxController {
       
       return true;
     } catch (e) {
-      print('Error saving vehicle: $e');
+      Logger.error('Error saving vehicle', e);
       Get.snackbar(
         'Error',
         'Failed to save vehicle',
@@ -309,7 +325,7 @@ class VehicleMasterController extends GetxController {
       
       return true;
     } catch (e) {
-      print('Error deleting vehicle: $e');
+      Logger.error('Error deleting vehicle', e);
       Get.snackbar(
         'Error',
         'Failed to delete vehicle',
@@ -342,7 +358,7 @@ class VehicleMasterController extends GetxController {
       
       return true;
     } catch (e) {
-      print('Error deleting selected vehicles: $e');
+      Logger.error('Error deleting selected vehicles', e);
       Get.snackbar(
         'Error',
         'Failed to delete selected vehicles',
@@ -377,7 +393,7 @@ class VehicleMasterController extends GetxController {
       
       return true;
     } catch (e) {
-      print('Error toggling vehicle active status: $e');
+      Logger.error('Error toggling vehicle active status', e);
       Get.snackbar(
         'Error',
         'Failed to update vehicle status',

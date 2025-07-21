@@ -2,17 +2,13 @@ import 'package:sqflite/sqflite.dart';
 
 import 'app_error.dart';
 import 'error_handler.dart';
-import '../services/logger_service.dart';
 
 class DatabaseErrorHandler {
-  final LoggerService _logger;
   final ErrorHandler _errorHandler;
 
   DatabaseErrorHandler({
-    required LoggerService logger,
     required ErrorHandler errorHandler,
-  })  : _logger = logger,
-        _errorHandler = errorHandler;
+  }) : _errorHandler = errorHandler;
 
   /// Handle a database operation with error handling
   Future<T> handleDatabaseOperation<T>(
@@ -34,7 +30,7 @@ class DatabaseErrorHandler {
     } catch (e, stackTrace) {
       // If it's already an AppError, just rethrow it
       if (e is AppError) {
-        throw e;
+        rethrow;
       }
 
       // Otherwise, convert it to a DatabaseError
@@ -78,7 +74,8 @@ class DatabaseErrorHandler {
       );
     } else if (message.contains('foreign key constraint failed')) {
       return DatabaseError(
-        message: errorMessage ?? 'Foreign key constraint failed in ${tableName ?? 'database'}',
+        message:
+            errorMessage ?? 'Foreign key constraint failed in ${tableName ?? 'database'}',
         code: 'DATABASE_FOREIGN_KEY_CONSTRAINT',
         operation: operationType,
         table: tableName,
@@ -86,7 +83,8 @@ class DatabaseErrorHandler {
       );
     } else if (message.contains('not null constraint failed')) {
       return DatabaseError(
-        message: errorMessage ?? 'Not null constraint failed in ${tableName ?? 'database'}',
+        message:
+            errorMessage ?? 'Not null constraint failed in ${tableName ?? 'database'}',
         code: 'DATABASE_NOT_NULL_CONSTRAINT',
         operation: operationType,
         table: tableName,
@@ -184,4 +182,3 @@ class DatabaseErrorHandler {
     );
   }
 }
-

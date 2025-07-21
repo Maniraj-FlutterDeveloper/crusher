@@ -2,13 +2,11 @@ import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/sync_item_model.dart';
-import '../services/db_service.dart';
+import '../services/database_service.dart';
 import '../../core/error/database_error_handler.dart';
-import '../../core/services/logger_service.dart';
 
 class SyncRepository {
-  final DbService _dbService = Get.find<DbService>();
-  final LoggerService _logger = Get.find<LoggerService>();
+  final DatabaseService _databaseService = Get.find<DatabaseService>();
   final DatabaseErrorHandler _dbErrorHandler = Get.find<DatabaseErrorHandler>();
 
   static const String tableName = 'sync_items';
@@ -17,7 +15,7 @@ class SyncRepository {
   Future<void> createTable() async {
     await _dbErrorHandler.handleDatabaseOperation(
       () async {
-        final db = await _dbService.database;
+        final db = await _databaseService.database;
         await db.execute('''
           CREATE TABLE IF NOT EXISTS $tableName (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,11 +50,9 @@ class SyncRepository {
   Future<int> addSyncItem(SyncItemModel item) async {
     return await _dbErrorHandler.handleWrite(
       () async {
-        final db = await _dbService.database;
-        return await db.insert(
+        return await _databaseService.insert(
           tableName,
           item.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
         );
       },
       tableName: tableName,
@@ -68,8 +64,7 @@ class SyncRepository {
   Future<List<SyncItemModel>> getPendingSyncItems() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> maps = await db.query(
+        final List<Map<String, dynamic>> maps = await _databaseService.query(
           tableName,
           where: 'status = ?',
           whereArgs: ['pending'],
@@ -89,8 +84,7 @@ class SyncRepository {
   Future<int> getPendingSyncItemsCount() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final result = await db.rawQuery(
+        final result = await _databaseService.rawQuery(
           'SELECT COUNT(*) as count FROM $tableName WHERE status = ?',
           ['pending'],
         );
@@ -105,8 +99,7 @@ class SyncRepository {
   Future<int> getSyncedItemsCount() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final result = await db.rawQuery(
+        final result = await _databaseService.rawQuery(
           'SELECT COUNT(*) as count FROM $tableName WHERE status = ?',
           ['synced'],
         );
@@ -121,8 +114,7 @@ class SyncRepository {
   Future<int> getFailedItemsCount() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final result = await db.rawQuery(
+        final result = await _databaseService.rawQuery(
           'SELECT COUNT(*) as count FROM $tableName WHERE status = ?',
           ['failed'],
         );
@@ -137,8 +129,7 @@ class SyncRepository {
   Future<List<SyncItemModel>> getAllSyncItems() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> maps = await db.query(
+        final List<Map<String, dynamic>> maps = await _databaseService.getAll(
           tableName,
           orderBy: 'created_at DESC',
         );
@@ -156,11 +147,10 @@ class SyncRepository {
   Future<List<SyncItemModel>> getSyncItemsByStatus(SyncStatus status) async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> maps = await db.query(
+        final List<Map<String, dynamic>> maps = await _databaseService.query(
           tableName,
           where: 'status = ?',
-          whereArgs: [SyncItemModel._statusToString(status)],
+          whereArgs: [status.toString().split('.').last],
           orderBy: 'created_at DESC',
         );
 
@@ -177,8 +167,7 @@ class SyncRepository {
   Future<List<SyncItemModel>> getSyncItemsByEntityType(String entityType) async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> maps = await db.query(
+        final List<Map<String, dynamic>> maps = await _databaseService.query(
           tableName,
           where: 'entity_type = ?',
           whereArgs: [entityType],
@@ -198,8 +187,7 @@ class SyncRepository {
   Future<SyncItemModel?> getSyncItemById(int id) async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> maps = await db.query(
+        final List<Map<String, dynamic>> maps = await _databaseService.query(
           tableName,
           where: 'id = ?',
           whereArgs: [id],
@@ -221,14 +209,13 @@ class SyncRepository {
   Future<int> markAsSyncing(int id) async {
     return await _dbErrorHandler.handleUpdate(
       () async {
-        final db = await _dbService.database;
-        return await db.update(
+        return await _databaseService.update(
           tableName,
           {
             'status': 'syncing',
           },
-          where: 'id = ?',
-          whereArgs: [id],
+          'id = ?',
+          [id],
         );
       },
       tableName: tableName,
@@ -240,15 +227,14 @@ class SyncRepository {
   Future<int> markAsSynced(int id) async {
     return await _dbErrorHandler.handleUpdate(
       () async {
-        final db = await _dbService.database;
-        return await db.update(
+        return await _databaseService.update(
           tableName,
           {
             'status': 'synced',
             'synced_at': DateTime.now().toIso8601String(),
           },
-          where: 'id = ?',
-          whereArgs: [id],
+          'id = ?',
+          [id],
         );
       },
       tableName: tableName,
@@ -260,15 +246,14 @@ class SyncRepository {
   Future<int> markAsFailed(int id, {String? errorMessage}) async {
     return await _dbErrorHandler.handleUpdate(
       () async {
-        final db = await _dbService.database;
-        return await db.update(
+        return await _databaseService.update(
           tableName,
           {
             'status': 'failed',
             'error_message': errorMessage,
           },
-          where: 'id = ?',
-          whereArgs: [id],
+          'id = ?',
+          [id],
         );
       },
       tableName: tableName,
@@ -280,11 +265,10 @@ class SyncRepository {
   Future<int> incrementAttemptCount(int id) async {
     return await _dbErrorHandler.handleUpdate(
       () async {
-        final db = await _dbService.database;
-        return await db.rawUpdate(
+        return await _databaseService.rawQuery(
           'UPDATE $tableName SET attempts = attempts + 1 WHERE id = ?',
           [id],
-        );
+        ).then((result) => 1); // Return 1 to indicate success
       },
       tableName: tableName,
       errorMessage: 'Failed to increment attempt count',
@@ -295,15 +279,14 @@ class SyncRepository {
   Future<int> resetFailedItem(int id) async {
     return await _dbErrorHandler.handleUpdate(
       () async {
-        final db = await _dbService.database;
-        return await db.update(
+        return await _databaseService.update(
           tableName,
           {
             'status': 'pending',
             'error_message': null,
           },
-          where: 'id = ? AND status = ?',
-          whereArgs: [id, 'failed'],
+          'id = ? AND status = ?',
+          [id, 'failed'],
         );
       },
       tableName: tableName,
@@ -315,15 +298,14 @@ class SyncRepository {
   Future<int> resetAllFailedItems() async {
     return await _dbErrorHandler.handleUpdate(
       () async {
-        final db = await _dbService.database;
-        return await db.update(
+        return await _databaseService.update(
           tableName,
           {
             'status': 'pending',
             'error_message': null,
           },
-          where: 'status = ?',
-          whereArgs: ['failed'],
+          'status = ?',
+          ['failed'],
         );
       },
       tableName: tableName,
@@ -335,11 +317,10 @@ class SyncRepository {
   Future<int> deleteSyncItem(int id) async {
     return await _dbErrorHandler.handleDelete(
       () async {
-        final db = await _dbService.database;
-        return await db.delete(
+        return await _databaseService.delete(
           tableName,
-          where: 'id = ?',
-          whereArgs: [id],
+          'id = ?',
+          [id],
         );
       },
       tableName: tableName,
@@ -351,11 +332,10 @@ class SyncRepository {
   Future<int> deleteSyncedItems() async {
     return await _dbErrorHandler.handleDelete(
       () async {
-        final db = await _dbService.database;
-        return await db.delete(
+        return await _databaseService.delete(
           tableName,
-          where: 'status = ?',
-          whereArgs: ['synced'],
+          'status = ?',
+          ['synced'],
         );
       },
       tableName: tableName,
@@ -367,11 +347,10 @@ class SyncRepository {
   Future<int> deleteFailedItems() async {
     return await _dbErrorHandler.handleDelete(
       () async {
-        final db = await _dbService.database;
-        return await db.delete(
+        return await _databaseService.delete(
           tableName,
-          where: 'status = ?',
-          whereArgs: ['failed'],
+          'status = ?',
+          ['failed'],
         );
       },
       tableName: tableName,
@@ -383,8 +362,7 @@ class SyncRepository {
   Future<int> clearAllSyncItems() async {
     return await _dbErrorHandler.handleDelete(
       () async {
-        final db = await _dbService.database;
-        return await db.delete(tableName);
+        return await _databaseService.delete(tableName, '1=1', []);
       },
       tableName: tableName,
       errorMessage: 'Failed to clear all sync items',
@@ -395,8 +373,7 @@ class SyncRepository {
   Future<Map<String, int>> getEntityTypeStats() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> result = await db.rawQuery('''
+        final List<Map<String, dynamic>> result = await _databaseService.rawQuery('''
           SELECT entity_type, COUNT(*) as count
           FROM $tableName
           GROUP BY entity_type
@@ -418,8 +395,7 @@ class SyncRepository {
   Future<DateTime?> getLastSyncAttempt() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> result = await db.rawQuery('''
+        final List<Map<String, dynamic>> result = await _databaseService.rawQuery('''
           SELECT MAX(synced_at) as last_sync
           FROM $tableName
           WHERE status IN ('synced', 'failed')
@@ -440,8 +416,7 @@ class SyncRepository {
   Future<DateTime?> getLastSuccessfulSync() async {
     return await _dbErrorHandler.handleRead(
       () async {
-        final db = await _dbService.database;
-        final List<Map<String, dynamic>> result = await db.rawQuery('''
+        final List<Map<String, dynamic>> result = await _databaseService.rawQuery('''
           SELECT MAX(synced_at) as last_sync
           FROM $tableName
           WHERE status = 'synced'
@@ -458,4 +433,3 @@ class SyncRepository {
     );
   }
 }
-

@@ -308,7 +308,7 @@ class ErrorSnackbar {
   static Color _getBackgroundColor(AppError error) {
     if (error is ValidationError) {
       return Colors.orange;
-    } else if (error is NetworkError && (error as NetworkError).isConnectionError) {
+    } else if (error is NetworkError && error.isConnectionError) {
       return Colors.orange;
     } else {
       return Colors.red;

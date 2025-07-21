@@ -91,8 +91,8 @@ abstract class BaseController extends GetxController {
   /// Show a loading dialog
   void showLoadingDialog({String? message}) {
     Get.dialog(
-      WillPopScope(
-        onWillPop: () async => false,
+      PopScope(
+        canPop: false,
         child: Center(
           child: Card(
             child: Padding(

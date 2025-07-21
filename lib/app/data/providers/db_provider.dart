@@ -1,65 +1,50 @@
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
-import '../services/db_service.dart';
+import '../services/database_service.dart';
 
 class DbProvider extends GetxService {
-  late final DbService _dbService;
+  late final DatabaseService _databaseService;
   
   // Initialize database provider
   Future<DbProvider> init() async {
-    _dbService = Get.find<DbService>();
+    _databaseService = Get.find<DatabaseService>();
     return this;
   }
   
   // Get database instance
-  Future<Database> get database async => await _dbService.database;
+  Future<Database> get database async => await _databaseService.database;
   
   // Get all records from a table
   Future<List<Map<String, dynamic>>> getAll(String table) async {
-    final db = await database;
-    return await db.query(table);
+    return await _databaseService.getAll(table);
   }
   
   // Get record by id
   Future<Map<String, dynamic>?> getById(String table, int id) async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      table,
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-    
-    if (maps.isNotEmpty) {
-      return maps.first;
-    }
-    
-    return null;
+    return await _databaseService.getById(table, id.toString());
   }
   
   // Insert record
   Future<int> insert(String table, Map<String, dynamic> data) async {
-    final db = await database;
-    return await db.insert(table, data);
+    return await _databaseService.insert(table, data);
   }
   
   // Update record
   Future<int> update(String table, Map<String, dynamic> data, int id) async {
-    final db = await database;
-    return await db.update(
+    return await _databaseService.update(
       table,
       data,
-      where: 'id = ?',
-      whereArgs: [id],
+      'id = ?',
+      [id],
     );
   }
   
   // Delete record
   Future<int> delete(String table, int id) async {
-    final db = await database;
-    return await db.delete(
+    return await _databaseService.delete(
       table,
-      where: 'id = ?',
-      whereArgs: [id],
+      'id = ?',
+      [id],
     );
   }
   
@@ -76,8 +61,7 @@ class DbProvider extends GetxService {
     int? limit,
     int? offset,
   }) async {
-    final db = await database;
-    return await db.query(
+    return await _databaseService.query(
       table,
       distinct: distinct,
       columns: columns,
@@ -93,32 +77,42 @@ class DbProvider extends GetxService {
   
   // Raw query
   Future<List<Map<String, dynamic>>> rawQuery(String sql, [List<dynamic>? arguments]) async {
-    final db = await database;
-    return await db.rawQuery(sql, arguments);
+    return await _databaseService.rawQuery(sql, arguments);
   }
   
   // Raw insert
   Future<int> rawInsert(String sql, [List<dynamic>? arguments]) async {
-    final db = await database;
-    return await db.rawInsert(sql, arguments);
+    return await _databaseService.rawQuery(sql, arguments).then((result) {
+      if (result.isNotEmpty && result.first.containsKey('last_insert_rowid()')) {
+        return result.first['last_insert_rowid()'] as int;
+      }
+      return 0;
+    });
   }
   
   // Raw update
   Future<int> rawUpdate(String sql, [List<dynamic>? arguments]) async {
-    final db = await database;
-    return await db.rawUpdate(sql, arguments);
+    return await _databaseService.rawQuery(sql, arguments).then((result) {
+      if (result.isNotEmpty && result.first.containsKey('changes()')) {
+        return result.first['changes()'] as int;
+      }
+      return 0;
+    });
   }
   
   // Raw delete
   Future<int> rawDelete(String sql, [List<dynamic>? arguments]) async {
-    final db = await database;
-    return await db.rawDelete(sql, arguments);
+    return await _databaseService.rawQuery(sql, arguments).then((result) {
+      if (result.isNotEmpty && result.first.containsKey('changes()')) {
+        return result.first['changes()'] as int;
+      }
+      return 0;
+    });
   }
   
   // Transaction
   Future<T> transaction<T>(Future<T> Function(Transaction txn) action) async {
-    final db = await database;
-    return await db.transaction(action);
+    return await _databaseService.transaction(action);
   }
   
   // Get active vehicles

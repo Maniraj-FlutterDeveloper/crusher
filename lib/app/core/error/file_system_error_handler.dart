@@ -1,18 +1,14 @@
 import 'dart:io';
 
 import 'app_error.dart';
-import 'error_handler.dart';
 import '../services/logger_service.dart';
 
 class FileSystemErrorHandler {
   final LoggerService _logger;
-  final ErrorHandler _errorHandler;
 
   FileSystemErrorHandler({
     required LoggerService logger,
-    required ErrorHandler errorHandler,
-  })  : _logger = logger,
-        _errorHandler = errorHandler;
+  }) : _logger = logger;
 
   /// Handle a file system operation with error handling
   Future<T> handleFileOperation<T>(
@@ -31,21 +27,13 @@ class FileSystemErrorHandler {
         errorMessage: errorMessage,
       );
       rethrow;
-    } catch (e, stackTrace) {
+    } catch (e) {
       // If it's already an AppError, just rethrow it
       if (e is AppError) {
-        throw e;
+        rethrow;
       }
 
       // Otherwise, convert it to a FileSystemError
-      final error = FileSystemError(
-        message: errorMessage ?? 'File operation failed',
-        code: 'FILE_SYSTEM_ERROR',
-        path: path,
-        operation: operationType,
-        details: e,
-        stackTrace: stackTrace,
-      );
       rethrow;
     }
   }
@@ -61,63 +49,63 @@ class FileSystemErrorHandler {
     final osError = exception.osError;
 
     // Handle specific file system errors
-    if (message.contains('no such file') || 
+    if (message.contains('no such file') ||
         message.contains('cannot find the file') ||
         (osError != null && osError.errorCode == 2)) {
       return FileSystemError.notFound(
         path: path ?? exception.path ?? '',
         stackTrace: StackTrace.current,
       );
-    } else if (message.contains('permission denied') || 
-               message.contains('access is denied') ||
-               (osError != null && (osError.errorCode == 13 || osError.errorCode == 5))) {
+    } else if (message.contains('permission denied') ||
+        message.contains('access is denied') ||
+        (osError != null && (osError.errorCode == 13 || osError.errorCode == 5))) {
       return FileSystemError.accessDenied(
         path: path ?? exception.path ?? '',
         operation: operationType,
         stackTrace: StackTrace.current,
       );
-    } else if (message.contains('is a directory') || 
-               (osError != null && osError.errorCode == 21)) {
+    } else if (message.contains('is a directory') ||
+        (osError != null && osError.errorCode == 21)) {
       return FileSystemError(
-        message: errorMessage ?? 'Path is a directory: ${path ?? exception.path}',
+        message: errorMessage ?? 'Path is a directory: \${path ?? exception.path}',
         code: 'FILE_IS_DIRECTORY',
         path: path ?? exception.path,
         operation: operationType,
         details: exception,
         stackTrace: StackTrace.current,
       );
-    } else if (message.contains('not a directory') || 
-               (osError != null && osError.errorCode == 20)) {
+    } else if (message.contains('not a directory') ||
+        (osError != null && osError.errorCode == 20)) {
       return FileSystemError(
-        message: errorMessage ?? 'Path is not a directory: ${path ?? exception.path}',
+        message: errorMessage ?? 'Path is not a directory: \${path ?? exception.path}',
         code: 'FILE_NOT_DIRECTORY',
         path: path ?? exception.path,
         operation: operationType,
         details: exception,
         stackTrace: StackTrace.current,
       );
-    } else if (message.contains('directory not empty') || 
-               (osError != null && osError.errorCode == 39)) {
+    } else if (message.contains('directory not empty') ||
+        (osError != null && osError.errorCode == 39)) {
       return FileSystemError(
-        message: errorMessage ?? 'Directory not empty: ${path ?? exception.path}',
+        message: errorMessage ?? 'Directory not empty: \${path ?? exception.path}',
         code: 'DIRECTORY_NOT_EMPTY',
         path: path ?? exception.path,
         operation: operationType,
         details: exception,
         stackTrace: StackTrace.current,
       );
-    } else if (message.contains('file exists') || 
-               (osError != null && osError.errorCode == 17)) {
+    } else if (message.contains('file exists') ||
+        (osError != null && osError.errorCode == 17)) {
       return FileSystemError(
-        message: errorMessage ?? 'File already exists: ${path ?? exception.path}',
+        message: errorMessage ?? 'File already exists: \${path ?? exception.path}',
         code: 'FILE_EXISTS',
         path: path ?? exception.path,
         operation: operationType,
         details: exception,
         stackTrace: StackTrace.current,
       );
-    } else if (message.contains('disk full') || 
-               (osError != null && osError.errorCode == 28)) {
+    } else if (message.contains('disk full') ||
+        (osError != null && osError.errorCode == 28)) {
       return FileSystemError(
         message: errorMessage ?? 'Disk full',
         code: 'DISK_FULL',
@@ -129,7 +117,7 @@ class FileSystemErrorHandler {
     } else {
       // Generic file system error
       return FileSystemError(
-        message: errorMessage ?? 'File system error: ${exception.message}',
+        message: errorMessage ?? 'File system error: \${exception.message}',
         code: 'FILE_SYSTEM_ERROR',
         path: path ?? exception.path,
         operation: operationType,
@@ -218,4 +206,3 @@ class FileSystemErrorHandler {
     );
   }
 }
-
